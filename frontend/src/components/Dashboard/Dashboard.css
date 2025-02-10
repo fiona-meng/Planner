@@ -1,7 +1,183 @@
-.custom-calendar-wrapper {
-    border-radius: 30px;
-    background: white;
-    border: none;
+.today-button {
+    border-radius: 30px !important;
+    border: 1px lightgray solid !important;
+    background-color: white !important;
+    padding: 8px 20px !important;
+}
 
+.go-button {
+    background-color: white !important;
+    border: none !important;
+    padding: 1px 20px !important;
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 50% !important;
+    font-weight: bold !important;
+    text-align: center !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.text-center {
+    text-align: center !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 30px !important;
+    font-weight: bold !important;
+    color: #000 !important;
+}
+
+.dropdown-toggle {
+    background-color: white !important;
+    border: 1px lightgray solid !important;
+    color: #212529 !important;
+    border-radius: 30px !important;
+    padding: 8px 20px !important;
+    width: 120px !important;
+}
+
+.dropdown-toggle:hover,
+.dropdown-toggle:active,
+.dropdown-toggle:focus {
+    background-color: #e2e6ea !important;
+    border-color: #dae0e5 !important;
+    color: #212529 !important;
+    border-radius: 30px !important;
+}
+
+/* Make dropdown button match other buttons */
+.rbc-toolbar .dropdown-toggle {
+    padding: 8px 20px !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+    border-radius: 30px !important;
+    border: 1px lightgray solid !important;
+    background-color: white !important;
+}
+
+.dropdown {
+    position: relative !important;
+}
+
+.dropdown-menu {
+    border-radius: 10px !important;
+    border: 1px lightgray solid !important;
+    background-color: rgb(92, 87, 87) !important;
+    width: 100% !important;
+    min-width: fit-content !important;
+}
+
+.dropdown-item {
+    text-align: center !important;
+    border: none !important;
+    color: #e2e6ea !important;
+}
+
+.dropdown-item:hover, .dropdown-item:active, .dropdown-item:focus {
+    background-color: #79797a !important;
+
+}
+
+/* Today button */
+.today-button:active,
+.today-button:focus {
+    background-color: #e2e6ea !important;
+    border-color: #dae0e5 !important;
+    box-shadow: none !important;
+}
+
+/* Go buttons */
+.go-button:active,
+.go-button:focus {
+    background-color: #e2e6ea !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.custom-calendar-wrapper {
+    border: none;
+}
+.calendar-border {
+    border: none !important;
+}
+
+/* Calendar container */
+.rbc-calendar {
+    background-color: white;
+    border-radius: 15px;
+    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell;
+}
+
+/* Header cells (day names) */
+.rbc-header {
+    padding: 10px;
+    font-weight: 500;
+    color: #666;
+    border: none !important;
+}
+
+/* Date cells */
+.rbc-date-cell {
+    padding: 8px;
+    font-weight: 400;
+    color: #333;
+}
+
+/* Today's date */
+.rbc-today {
+    background-color: #f8f9fa !important;
+}
+
+/* Selected time slot */
+.rbc-selected {
+    background-color: rgba(66, 133, 244, 0.1) !important;
+}
+
+/* Event styles */
+.rbc-event {
+    background-color: #4285f4;
+    border-radius: 4px;
+    border: none;
+    padding: 4px 8px;
+}
+
+/* Month view specific */
+.rbc-month-view {
+    border: none !important;
+}
+
+.rbc-month-row {
+    border: none !important;
+}
+
+.rbc-day-bg {
+    border: 1px solid #f0f0f0 !important;
+}
+
+/* Time grid specific */
+.rbc-time-view {
+    border: none !important;
+}
+
+.rbc-time-header {
+    border: none !important;
+}
+
+.rbc-time-content {
+    border: none !important;
+}
+
+/* Off-range dates (dates from other months) */
+.rbc-off-range {
+    color: #bababa;
+}
+
+/* Current time indicator */
+.rbc-current-time-indicator {
+    background-color: #ea4335;
+    height: 2px;
 }
 
