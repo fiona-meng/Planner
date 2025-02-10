@@ -24,4 +24,11 @@ const authAPI = {
   },
 };
 
-export { authAPI };
+const taskAPI = {
+  createTask: (taskData) => api.post('/tasks', taskData),
+  getTasks: () => api.get('/tasks'),
+  updateTask: (taskId, taskData) => api.put(`/tasks/${taskId}`, taskData),
+  deleteTask: (taskId) => api.delete(`/tasks/${taskId}`)
+};
+
+export { authAPI, taskAPI };

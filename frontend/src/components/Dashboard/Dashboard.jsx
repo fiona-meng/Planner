@@ -5,6 +5,7 @@ import parse from 'date-fns/parse';
 import startOfWeek from 'date-fns/startOfWeek';
 import getDay from 'date-fns/getDay';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+import './Dashboard.css';
 
 const locales = {
     'en-US': require('date-fns/locale/en-US')
@@ -18,121 +19,97 @@ const localizer = dateFnsLocalizer({
     locales,
 });
 
-function Dashboard() {
-    const [events, setEvents] = useState([
-        {
-            title: 'Sample Event',
-            start: new Date(),
-            end: new Date(),
-            allDay: true,
-        }
-    ]);
+const CustomToolbar = (toolbar) => (
+    <div className="rbc-toolbar">
+        <div className="rbc-btn-group">
+            <button onClick={() => toolbar.onNavigate('PREV')}>&lt;</button>
+            <button onClick={() => toolbar.onNavigate('TODAY')}>Today</button>
+            <button onClick={() => toolbar.onNavigate('NEXT')}>&gt;</button>
+        </div>
+        <span className="rbc-toolbar-label">{toolbar.label}</span>
+        <div className="dropdown">
+            <button 
+                className="btn btn-primary dropdown-toggle" 
+                type="button" 
+                data-bs-toggle="dropdown"
+            >
+                {toolbar.view.charAt(0).toUpperCase() + toolbar.view.slice(1)} View
+            </button>
+            <ul className="dropdown-menu">
+                <li><button className="dropdown-item" onClick={() => toolbar.onView('month')}>Month</button></li>
+                <li><button className="dropdown-item" onClick={() => toolbar.onView('week')}>Week</button></li>
+                <li><button className="dropdown-item" onClick={() => toolbar.onView('day')}>Day</button></li>
+            </ul>
+        </div>
+    </div>
+);
 
-    const [showAddModal, setShowAddModal] = useState(false);
+function Dashboard() {
+    const [events, setEvents] = useState([]);
+    const [showModal, setShowModal] = useState(false);
     const [newEvent, setNewEvent] = useState({
         title: '',
         start: new Date(),
-        end: new Date(),
+        end: new Date()
     });
 
     const handleSelect = ({ start, end }) => {
-        setNewEvent({
-            title: '',
-            start,
-            end,
-        });
-        setShowAddModal(true);
+        setNewEvent({ ...newEvent, start, end });
+        setShowModal(true);
     };
 
     const handleAddEvent = () => {
         if (newEvent.title) {
             setEvents([...events, newEvent]);
-            setShowAddModal(false);
-            setNewEvent({
-                title: '',
-                start: new Date(),
-                end: new Date(),
-            });
+            setShowModal(false);
+            setNewEvent({ title: '', start: new Date(), end: new Date() });
         }
     };
 
     return (
-        <div className="container-fluid">
-            <div className="row">
-                <div className="col-12 p-4">
-                    <div className="card shadow">
-                        <div className="card-body">
-                            <Calendar
-                                localizer={localizer}
-                                events={events}
-                                startAccessor="start"
-                                endAccessor="end"
-                                style={{ height: 'calc(100vh - 200px)' }}
-                                selectable
-                                onSelectSlot={handleSelect}
-                                onSelectEvent={(event) => alert(event.title)}
-                            />
-                        </div>
-                    </div>
+        <div className="container">
+            <div className="card custom-calendar-wrapper">
+                <div className="card-body">
+                    <Calendar
+                        components={{ toolbar: CustomToolbar }}
+                        localizer={localizer}
+                        events={events}
+                        startAccessor="start"
+                        endAccessor="end"
+                        style={{ height: 'calc(100vh - 100px)' }}
+                        selectable
+                        onSelectSlot={handleSelect}
+                        onSelectEvent={(event) => alert(event.title)}
+                    />
                 </div>
             </div>
 
-            {/* Add Event Modal */}
-            <div className={`modal fade ${showAddModal ? 'show' : ''}`} 
-                style={{ display: showAddModal ? 'block' : 'none' }}>
-                <div className="modal-dialog">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h5 className="modal-title">Add New Event</h5>
-                            <button type="button" className="btn-close" onClick={() => setShowAddModal(false)}></button>
-                        </div>
-                        <div className="modal-body">
-                            <div className="mb-3">
-                                <label className="form-label">Event Title</label>
+            {showModal && (
+                <div className="modal show d-block">
+                    <div className="modal-dialog">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5>Add Event</h5>
+                                <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
+                            </div>
+                            <div className="modal-body">
                                 <input
                                     type="text"
                                     className="form-control"
+                                    placeholder="Event Title"
                                     value={newEvent.title}
                                     onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
                                 />
                             </div>
-                            <div className="mb-3">
-                                <label className="form-label">Start Date</label>
-                                <input
-                                    type="datetime-local"
-                                    className="form-control"
-                                    value={format(newEvent.start, "yyyy-MM-dd'T'HH:mm")}
-                                    onChange={(e) => setNewEvent({ 
-                                        ...newEvent, 
-                                        start: new Date(e.target.value) 
-                                    })}
-                                />
+                            <div className="modal-footer">
+                                <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Close</button>
+                                <button className="btn btn-primary" onClick={handleAddEvent}>Add</button>
                             </div>
-                            <div className="mb-3">
-                                <label className="form-label">End Date</label>
-                                <input
-                                    type="datetime-local"
-                                    className="form-control"
-                                    value={format(newEvent.end, "yyyy-MM-dd'T'HH:mm")}
-                                    onChange={(e) => setNewEvent({ 
-                                        ...newEvent, 
-                                        end: new Date(e.target.value) 
-                                    })}
-                                />
-                            </div>
-                        </div>
-                        <div className="modal-footer">
-                            <button type="button" className="btn btn-secondary" onClick={() => setShowAddModal(false)}>
-                                Close
-                            </button>
-                            <button type="button" className="btn btn-primary" onClick={handleAddEvent}>
-                                Add Event
-                            </button>
                         </div>
                     </div>
                 </div>
-            </div>
-            {showAddModal && <div className="modal-backdrop fade show"></div>}
+            )}
+            {showModal && <div className="modal-backdrop show"></div>}
         </div>
     );
 }

@@ -1,4 +1,5 @@
 const express = require('express')
+const cors = require('cors')
 const app = express()
 const connectDB = require('./config/database')
 const taskRoutes = require('./src/routes/taskRoutes');
@@ -11,6 +12,8 @@ connectDB()
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use(cors());
 
 // Routes
 app.use('/tasks', taskRoutes);
