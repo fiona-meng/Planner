@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import format from 'date-fns/format';
 import parse from 'date-fns/parse';
@@ -6,6 +6,7 @@ import startOfWeek from 'date-fns/startOfWeek';
 import getDay from 'date-fns/getDay';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import './Dashboard.css';
+import { eventAPI, todoAPI } from '../../services/api';
 
 const locales = {
     'en-US': require('date-fns/locale/en-US')
@@ -62,39 +63,57 @@ function Dashboard() {
     const [newEvent, setNewEvent] = useState({
         title: '',
         description: '',
-        taskType: 'normal',
-        duration: 60,
-        scheduledTime: new Date(),
-        deadline: new Date(),
-        priority: 'Medium',
-        status: 'Todo',
-        category: 'General',
-        tags: [],
-        scheduledSlot: {
-            start: new Date(),
-            end: new Date()
-        },
-        energyLevel: {
-            required: 'medium',
-            preferred: 'morning'
-        },
-        progress: {
-            current: 0,
-            target: 1,
-            unit: 'ratio'
-        }
+        start: new Date(),
+        end: new Date(),
+        allDay: false,
+        category: 'General'
     });
 
+    useEffect(() => {
+        loadEvents();
+    }, []);
+
+    const loadEvents = async () => {
+        try {
+            const response = await eventAPI.getEvents();
+            if (response.data.success) {
+                const calendarEvents = response.data.events.map(event => ({
+                    ...event,
+                    start: new Date(event.start),
+                    end: new Date(event.end)
+                }));
+                setEvents(calendarEvents);
+            }
+        } catch (error) {
+            console.error('Error loading events:', error);
+        }
+    };
+
     const handleSelect = ({ start, end }) => {
-        setNewEvent({ ...newEvent, start, end });
+        setNewEvent(prev => ({ ...prev, start, end }));
         setShowModal(true);
     };
 
-    const handleAddEvent = () => {
+    const handleAddEvent = async () => {
         if (newEvent.title) {
-            setEvents([...events, newEvent]);
-            setShowModal(false);
-            setNewEvent({ title: '', description: '', taskType: 'normal', duration: 60, scheduledTime: new Date(), deadline: new Date(), priority: 'Medium', status: 'Todo', category: 'General', tags: [], scheduledSlot: { start: new Date(), end: new Date() }, energyLevel: { required: 'medium', preferred: 'morning' }, progress: { current: 0, target: 1, unit: 'ratio' } });
+            try {
+                const response = await eventAPI.createEvent(newEvent);
+                if (response.data.success) {
+                    await loadEvents();
+                    setShowModal(false);
+                    setNewEvent({
+                        title: '',
+                        description: '',
+                        start: new Date(),
+                        end: new Date(),
+                        allDay: false,
+                        category: 'General'
+                    });
+                }
+            } catch (error) {
+                console.error('Error creating event:', error);
+                alert('Failed to create event');
+            }
         }
     };
 
@@ -125,131 +144,55 @@ function Dashboard() {
 
             {showModal && (
                 <div className="modal show d-block">
-                    <div className="modal-dialog modal-lg">
+                    <div className="modal-dialog">
                         <div className="modal-content">
                             <div className="modal-header">
-                                <h5>Add New Task</h5>
+                                <h5>Add Event</h5>
                                 <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
                             </div>
                             <div className="modal-body">
-                                <div className="row mb-3">
-                                    <div className="col-md-6">
-                                        <div className="mb-3">
-                                            <label className="form-label">Title</label>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                value={newEvent.title}
-                                                onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
-                                                required
-                                            />
-                                        </div>
-                                        <div className="mb-3">
-                                            <label className="form-label">Description</label>
-                                            <textarea
-                                                className="form-control"
-                                                value={newEvent.description}
-                                                onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
-                                            />
-                                        </div>
-                                        <div className="mb-3">
-                                            <label className="form-label">Task Type</label>
-                                            <select
-                                                className="form-select"
-                                                value={newEvent.taskType}
-                                                onChange={(e) => setNewEvent({ ...newEvent, taskType: e.target.value })}
-                                            >
-                                                <option value="normal">Normal</option>
-                                                <option value="exercise">Exercise</option>
-                                                <option value="long-term">Long Term</option>
-                                                <option value="scheduled">Scheduled</option>
-                                                <option value="deadline">Deadline</option>
-                                                <option value="flexible">Flexible</option>
-                                                <option value="habit">Habit</option>
-                                            </select>
-                                        </div>
-                                        <div className="mb-3">
-                                            <label className="form-label">Category</label>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                value={newEvent.category}
-                                                onChange={(e) => setNewEvent({ ...newEvent, category: e.target.value })}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="col-md-6">
-                                        <div className="mb-3">
-                                            <label className="form-label">Duration (minutes)</label>
-                                            <input
-                                                type="number"
-                                                className="form-control"
-                                                min="5"
-                                                value={newEvent.duration}
-                                                onChange={(e) => setNewEvent({ ...newEvent, duration: parseInt(e.target.value) })}
-                                                required
-                                            />
-                                        </div>
-                                        <div className="mb-3">
-                                            <label className="form-label">Scheduled Time</label>
-                                            <input
-                                                type="datetime-local"
-                                                className="form-control"
-                                                value={format(newEvent.scheduledTime, "yyyy-MM-dd'T'HH:mm")}
-                                                onChange={(e) => setNewEvent({ ...newEvent, scheduledTime: new Date(e.target.value) })}
-                                            />
-                                        </div>
-                                        <div className="mb-3">
-                                            <label className="form-label">Priority</label>
-                                            <select
-                                                className="form-select"
-                                                value={newEvent.priority}
-                                                onChange={(e) => setNewEvent({ ...newEvent, priority: e.target.value })}
-                                            >
-                                                <option value="Low">Low</option>
-                                                <option value="Medium">Medium</option>
-                                                <option value="High">High</option>
-                                            </select>
-                                        </div>
-                                        <div className="mb-3">
-                                            <label className="form-label">Energy Level</label>
-                                            <div className="row">
-                                                <div className="col">
-                                                    <select
-                                                        className="form-select"
-                                                        value={newEvent.energyLevel.required}
-                                                        onChange={(e) => setNewEvent({
-                                                            ...newEvent,
-                                                            energyLevel: { ...newEvent.energyLevel, required: e.target.value }
-                                                        })}
-                                                    >
-                                                        <option value="low">Low</option>
-                                                        <option value="medium">Medium</option>
-                                                        <option value="high">High</option>
-                                                    </select>
-                                                </div>
-                                                <div className="col">
-                                                    <select
-                                                        className="form-select"
-                                                        value={newEvent.energyLevel.preferred}
-                                                        onChange={(e) => setNewEvent({
-                                                            ...newEvent,
-                                                            energyLevel: { ...newEvent.energyLevel, preferred: e.target.value }
-                                                        })}
-                                                    >
-                                                        <option value="morning">Morning</option>
-                                                        <option value="afternoon">Afternoon</option>
-                                                        <option value="evening">Evening</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
+                                <div className="mb-3">
+                                    <label className="form-label">Title</label>
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        value={newEvent.title}
+                                        onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <div className="mb-3">
+                                    <label className="form-label">Description</label>
+                                    <textarea
+                                        className="form-control"
+                                        value={newEvent.description}
+                                        onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
+                                    />
+                                </div>
+                                <div className="mb-3">
+                                    <label className="form-label">Category</label>
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        value={newEvent.category}
+                                        onChange={(e) => setNewEvent({ ...newEvent, category: e.target.value })}
+                                    />
+                                </div>
+                                <div className="mb-3">
+                                    <div className="form-check">
+                                        <input
+                                            type="checkbox"
+                                            className="form-check-input"
+                                            checked={newEvent.allDay}
+                                            onChange={(e) => setNewEvent({ ...newEvent, allDay: e.target.checked })}
+                                        />
+                                        <label className="form-check-label">All Day</label>
                                     </div>
                                 </div>
                             </div>
                             <div className="modal-footer">
                                 <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Close</button>
-                                <button className="btn btn-primary" onClick={handleAddEvent}>Add Task</button>
+                                <button className="btn btn-primary" onClick={handleAddEvent}>Add Event</button>
                             </div>
                         </div>
                     </div>

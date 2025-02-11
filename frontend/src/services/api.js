@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from './axios';
 
 const API_BASE_URL = 'http://localhost:5001';
 const api = axios.create({
@@ -16,6 +16,16 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+api.interceptors.response.use(
+    response => response,
+    error => {
+        // Handle error globally
+        console.error('API error:', error);
+        // Optionally, show a notification or redirect
+        return Promise.reject(error);
+    }
+);
+
 const authAPI = {
   login: (credentials) => api.post('/auth/login', credentials),
   register: (userData) => api.post('/auth/register', userData),
@@ -24,11 +34,23 @@ const authAPI = {
   },
 };
 
-const taskAPI = {
-  createTask: (taskData) => api.post('/tasks', taskData),
-  getTasks: () => api.get('/tasks'),
-  updateTask: (taskId, taskData) => api.put(`/tasks/${taskId}`, taskData),
-  deleteTask: (taskId) => api.delete(`/tasks/${taskId}`)
+const eventAPI = {
+  createEvent: (eventData) => api.post('/events', eventData),
+  getEvents: () => api.get('/events'),
+  updateEvent: (eventId, eventData) => api.put(`/events/${eventId}`, eventData),
+  deleteEvent: (eventId) => api.delete(`/events/${eventId}`)
 };
 
-export { authAPI, taskAPI };
+const todoAPI = {
+  createTodo: (todoData) => api.post('/todos', todoData),
+  getTodos: () => api.get('/todos'),
+  updateTodo: (todoId, todoData) => api.put(`/todos/${todoId}`, todoData),
+  deleteTodo: (todoId) => api.delete(`/todos/${todoId}`),
+  toggleStatus: (todoId) => api.put(`/todos/${todoId}/toggle`),
+  getTodosByStatus: (status) => api.get(`/todos/status/${status}`),
+  getTodosByDate: (date) => api.get(`/todos/date/${date}`),
+  getTodosByDateRange: (startDate, endDate) => api.get(`/todos/date-range?startDate=${startDate}&endDate=${endDate}`)
+};
+
+
+export { authAPI, eventAPI, todoAPI };
