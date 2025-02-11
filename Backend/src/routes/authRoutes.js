@@ -24,13 +24,12 @@ router.delete('/events/:id', eventController.deleteEvent);
 router.put('/events/:id', eventController.updateEvent);
 router.post('/todos', todoController.createTodo);
 router.get('/todos', todoController.getAllTodos);
+router.get('/todos/date/:date', todoController.getTodosByDate);
+router.get('/todos/status/:status', todoController.getTodosByStatus);
+router.get('/todos/date-range', todoController.getTodosByDateRange);
 router.delete('/todos/:id', todoController.deleteTodo);
 router.put('/todos/:id', todoController.updateTodo);
 router.get('/todos/:id', todoController.getTodoById);
 router.put('/todos/:id/toggle', todoController.toggleStatus);
-router.get('/todos/status/:status', todoController.getTodosByStatus);
-router.get('/todos/date/:date', todoController.getTodosByDate);
-router.get('/todos/date-range', todoController.getTodosByDateRange);
-
 
 module.exports = router; 

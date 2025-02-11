@@ -3,6 +3,7 @@ const cors = require('cors')
 const app = express()
 const connectDB = require('./config/database')
 const authRoutes = require('./src/routes/authRoutes');
+const eventRoutes = require('./src/routes/eventRoutes');
 
 require('dotenv').config();
 // Connect to MongoDB
@@ -15,6 +16,7 @@ app.use(cors());
 
 // Routes
 app.use('/auth', authRoutes);
+app.use('/events', eventRoutes);
 
 
 app.listen(5001, () => {
