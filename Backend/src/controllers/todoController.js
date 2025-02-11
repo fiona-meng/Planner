@@ -1,130 +1,130 @@
 const Todo = require('../models/todoModel');
 
 const todoController = {
-    // Create a new todo
-    createTodo: async (req, res) => {
+    async createTodo(req, res) {
         try {
-            const newTodo = new Todo({
+            const todo = new Todo({
                 ...req.body,
-                userId: req.user.id // Assuming user info is added by auth middleware
+                userId: req.user._id
             });
-            const savedTodo = await newTodo.save();
-            res.status(201).json(savedTodo);
-        } catch (error) {
-            res.status(400).json({ message: error.message });
-        }
-    },
-
-    // Get all todos for a user
-    getAllTodos: async (req, res) => {
-        try {
-            const todos = await Todo.find({ userId: req.user.id })
-                .sort({ dueDate: 1 }); // Sort by due date ascending
-            res.json(todos);
-        } catch (error) {
-            res.status(500).json({ message: error.message });
-        }
-    },
-
-    // Get a specific todo
-    getTodoById: async (req, res) => {
-        try {
-            const todo = await Todo.findOne({
-                _id: req.params.id,
-                userId: req.user.id
-            });
-            if (!todo) {
-                return res.status(404).json({ message: 'Todo not found' });
-            }
-            res.json(todo);
-        } catch (error) {
-            res.status(500).json({ message: error.message });
-        }
-    },
-
-    // Update a todo
-    updateTodo: async (req, res) => {
-        try {
-            const updatedTodo = await Todo.findOneAndUpdate(
-                {
-                    _id: req.params.id,
-                    userId: req.user.id
-                },
-                req.body,
-                { new: true, runValidators: true }
-            );
-            if (!updatedTodo) {
-                return res.status(404).json({ message: 'Todo not found' });
-            }
-            res.json(updatedTodo);
-        } catch (error) {
-            res.status(400).json({ message: error.message });
-        }
-    },
-
-    // Delete a todo
-    deleteTodo: async (req, res) => {
-        try {
-            const deletedTodo = await Todo.findOneAndDelete({
-                _id: req.params.id,
-                userId: req.user.id
-            });
-            if (!deletedTodo) {
-                return res.status(404).json({ message: 'Todo not found' });
-            }
-            res.json({ message: 'Todo deleted successfully' });
-        } catch (error) {
-            res.status(500).json({ message: error.message });
-        }
-    },
-
-    // Toggle todo status
-    toggleStatus: async (req, res) => {
-        try {
-            const todo = await Todo.findOne({
-                _id: req.params.id,
-                userId: req.user.id
-            });
-            if (!todo) {
-                return res.status(404).json({ message: 'Todo not found' });
-            }
-            todo.status = todo.status === 'Incomplete' ? 'Completed' : 'Incomplete';
             await todo.save();
-            res.json(todo);
+            res.json({ success: true, todo });
         } catch (error) {
-            res.status(400).json({ message: error.message });
+            res.status(400).json({ success: false, message: error.message });
         }
     },
 
-    // Get todos by status
-    getTodosByStatus: async (req, res) => {
+    async getTodos(req, res) {
         try {
-            const todos = await Todo.find({
-                userId: req.user.id,
-                status: req.params.status
-            }).sort({ dueDate: 1 });
-            res.json(todos);
+            const todos = await Todo.find({ userId: req.user._id });
+            res.json({ success: true, todos });
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            res.status(400).json({ success: false, message: error.message });
         }
     },
 
-    // Get todos by due date range
-    getTodosByDateRange: async (req, res) => {
+    async updateTodo(req, res) {
+        try {
+            const todo = await Todo.findOneAndUpdate(
+                { _id: req.params.id, userId: req.user._id },
+                req.body,
+                { new: true }
+            );
+            res.json({ success: true, todo });
+        } catch (error) {
+            res.status(400).json({ success: false, message: error.message });
+        }
+    },
+
+    async deleteTodo(req, res) {
+        try {
+            await Todo.findOneAndDelete({ _id: req.params.id, userId: req.user._id });
+            res.json({ success: true });
+        } catch (error) {
+            res.status(400).json({ success: false, message: error.message });
+        }
+    },
+
+    async toggleStatus(req, res) {
+        try {
+            const todo = await Todo.findOne({ _id: req.params.id, userId: req.user._id });
+            if (!todo) {
+                return res.status(404).json({ success: false, error: 'Todo not found' });
+            }
+    
+            // Toggle between 'Completed' and 'Incomplete'
+            todo.status = todo.status === 'Completed' ? 'Incomplete' : 'Completed';
+            await todo.save();
+            
+            res.json({
+                success: true,
+                data: todo,
+                message: `Todo marked as ${todo.status}`
+            });
+        } catch (error) {
+            console.error('Toggle error:', error);
+            res.status(500).json({ success: false, error: error.message });
+        }
+    },
+
+    async getTodosByStatus(req, res) {
+        try {
+            const status = req.params.status; // Should be 'Completed' or 'Incomplete'
+            if (!['Completed', 'Incomplete'].includes(status)) {
+                return res.status(400).json({ 
+                    success: false, 
+                    error: 'Status must be either Completed or Incomplete' 
+                });
+            }
+
+            const todos = await Todo.find({ 
+                userId: req.user._id,
+                status: status
+            });
+            res.json({ success: true, data: todos });
+        } catch (error) {
+            res.status(500).json({ success: false, error: error.message });
+        }
+    },
+
+    async getTodosByDate(req, res) {
+        try {
+            const date = new Date(req.params.date);
+            const startOfDay = new Date(date.setHours(0, 0, 0, 0));
+            const endOfDay = new Date(date.setHours(23, 59, 59, 999));
+
+            const todos = await Todo.find({
+                userId: req.user._id,
+                dueDate: {
+                    $gte: startOfDay,
+                    $lte: endOfDay
+                }
+            });
+            res.json({ success: true, data: todos });
+        } catch (error) {
+            res.status(500).json({ success: false, error: error.message });
+        }
+    },
+
+    async getTodosByDateRange(req, res) {
         try {
             const { startDate, endDate } = req.query;
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+
             const todos = await Todo.find({
-                userId: req.user.id,
+                userId: req.user._id,
                 dueDate: {
-                    $gte: new Date(startDate),
-                    $lte: new Date(endDate)
+                    $gte: start,
+                    $lte: end
                 }
-            }).sort({ dueDate: 1 });
-            res.json(todos);
+            });
+            res.json({ success: true, data: todos });
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            res.status(500).json({ success: false, error: error.message });
         }
     }
 };
 
-module.exports = todoController;  
+module.exports = todoController;

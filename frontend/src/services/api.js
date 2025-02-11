@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5001';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5001';
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -21,7 +21,21 @@ api.interceptors.response.use(
     error => {
         // Handle error globally
         console.error('API error:', error);
-        // Optionally, show a notification or redirect
+        
+        // Handle specific error cases
+        if (error.response) {
+            // Server responded with error status
+            if (error.response.status === 401) {
+                // Handle unauthorized access
+                localStorage.removeItem('token');
+                // You might want to redirect to login page here
+            }
+            console.error('Response error:', error.response.data);
+        } else if (error.request) {
+            // Request made but no response received
+            console.error('Network error:', error.request);
+        }
+        
         return Promise.reject(error);
     }
 );
@@ -49,7 +63,8 @@ const todoAPI = {
   toggleStatus: (todoId) => api.put(`/todos/${todoId}/toggle`),
   getTodosByStatus: (status) => api.get(`/todos/status/${status}`),
   getTodosByDate: (date) => api.get(`/todos/date/${date}`),
-  getTodosByDateRange: (startDate, endDate) => api.get(`/todos/date-range?startDate=${startDate}&endDate=${endDate}`)
+  getTodosByDateRange: (startDate, endDate) => 
+      api.get(`/todos/date-range?startDate=${startDate}&endDate=${endDate}`)
 };
 
 

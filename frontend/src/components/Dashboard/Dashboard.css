@@ -218,3 +218,78 @@
     font-size: 0.8em;
 }
 
+.right-panel {
+    position: static;
+    right: auto;
+    top: auto;
+    width: auto;
+    height: auto;
+    box-shadow: none;
+    transition: none;
+    z-index: auto;
+    padding: 20px 0;
+}
+
+.right-panel.show {
+    right: auto;
+}
+
+.right-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.right-panel-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.right-panel-tabs button {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: none;
+    border-bottom: 2px solid transparent;
+}
+
+.right-panel-tabs button.active {
+    border-bottom-color: #0d6efd;
+    color: #0d6efd;
+}
+
+/* Add these styles for the two-column layout */
+.dashboard-container {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+    overflow: hidden;
+}
+
+.calendar-column {
+    flex: 1;
+    padding: 20px;
+    overflow: hidden;
+}
+
+.right-column {
+    width: 400px;
+    background: white;
+    border-left: 1px solid #eee;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+/* Update calendar styles */
+.calendar-border {
+    height: 100%;
+}
+
+.custom-calendar-wrapper {
+    height: 100%;
+}
+
