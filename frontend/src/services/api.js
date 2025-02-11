@@ -56,8 +56,8 @@ const eventAPI = {
 };
 
 const todoAPI = {
-  createTodo: (todoData) => api.post('/todos', todoData),
   getTodos: () => api.get('/todos'),
+  createTodo: (todoData) => api.post('/todos', todoData),
   updateTodo: (todoId, todoData) => api.put(`/todos/${todoId}`, todoData),
   deleteTodo: (todoId) => api.delete(`/todos/${todoId}`),
   toggleStatus: (todoId) => api.put(`/todos/${todoId}/toggle`),

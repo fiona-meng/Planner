@@ -293,3 +293,166 @@
     height: 100%;
 }
 
+.todo-list {
+    max-height: 300px;
+    overflow-y: auto;
+    border-bottom: 1px solid #eee;
+}
+
+.todo-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.todo-item:last-child {
+    border-bottom: none;
+}
+
+.todo-item .form-check {
+    margin-bottom: 5px;
+}
+
+.todo-item .text-muted {
+    font-size: 0.8em;
+    margin-left: 25px;
+}
+
+.task-display-panel {
+    padding: 20px;
+}
+
+.task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.task-header h2 {
+    font-size: 24px;
+    margin: 0;
+    font-weight: 500;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    padding: 8px;
+    border-radius: 50%;
+    color: #666;
+}
+
+.btn-icon:hover {
+    background-color: #f0f0f0;
+}
+
+.add-task-button {
+    margin-bottom: 20px;
+}
+
+.add-task-button .btn-link {
+    text-decoration: none;
+    padding: 0;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+}
+
+.tasks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.task-item {
+    padding: 8px 0;
+}
+
+.task-item .form-check {
+    margin: 0;
+    padding: 0;
+}
+
+.task-item .form-check-input {
+    margin-right: 12px;
+    border-color: #999;
+}
+
+.task-item .form-check-label {
+    display: flex;
+    align-items: flex-start;
+    cursor: pointer;
+}
+
+.task-title {
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.task-due {
+    font-size: 12px;
+    color: #666;
+    padding: 2px 8px;
+    background-color: #f0f0f0;
+    border-radius: 12px;
+    display: inline-block;
+}
+
+.add-todo-form {
+    background-color: white;
+    padding: 10px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.add-todo-form input[type="text"] {
+    border: none;
+    border-bottom: 2px solid #eee;
+    border-radius: 0;
+    padding: 8px 0;
+    font-size: 14px;
+}
+
+.add-todo-form input[type="text"]:focus {
+    box-shadow: none;
+    border-bottom-color: #0d6efd;
+}
+
+.add-todo-form input[type="datetime-local"] {
+    font-size: 14px;
+}
+
+.create-event-form input.form-control-lg {
+    font-size: 24px;
+    padding: 0.5rem 0;
+}
+
+.create-event-form input.form-control-lg::placeholder {
+    color: #999;
+}
+
+.create-event-form .form-control {
+    border: none;
+    border-radius: 0;
+    padding: 0.5rem 0;
+    background: none;
+}
+
+.create-event-form .form-control:focus {
+    box-shadow: none;
+    border-bottom: 2px solid #0d6efd;
+}
+
+.create-event-form .form-select {
+    border: none;
+    border-radius: 0;
+    padding: 0.5rem 0;
+    background-position: right 0 center;
+}
+
+.create-event-form .bi {
+    font-size: 1.2rem;
+    width: 24px;
+}
+
