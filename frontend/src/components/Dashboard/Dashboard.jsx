@@ -51,8 +51,8 @@ const CustomToolbar = ({ toolbar, setShowCreatePanel, setShowTaskDisplayPanel })
                 className="btn btn-primary today-button" 
                 type="button" 
                 onClick={() => {
-                    setShowTaskDisplayPanel(false);  // Close task panel
-                    setShowCreatePanel(true);        // Open create panel
+                    setShowTaskDisplayPanel(false);  
+                    setShowCreatePanel(true);       
                 }}
             >
                 + Create
@@ -61,8 +61,8 @@ const CustomToolbar = ({ toolbar, setShowCreatePanel, setShowTaskDisplayPanel })
                 className="btn btn-primary today-button" 
                 type="button" 
                 onClick={() => {
-                    setShowCreatePanel(false);       // Close create panel
-                    setShowTaskDisplayPanel(true);   // Open task panel
+                    setShowCreatePanel(false);     
+                    setShowTaskDisplayPanel(true);  
                 }}
             >
                 My Tasks
@@ -88,16 +88,16 @@ function Dashboard() {
     const [showAddTodoForm, setShowAddTodoForm] = useState(false);
     const [newEvent, setNewEvent] = useState({
         title: '',
+        isAllDay: false,
         startDate: new Date(),
         endDate: new Date(),
-        description: '',
-        isAllDay: false,
         repeat: 'none',
+        participants: [],  // Array of {email: String, status: String}
         location: '',
-        participants: [],
-        conferencing: '',
-        category: 'General'
+        description: ''
     });
+    const [activeCreateTab, setActiveCreateTab] = useState('event');
+    const [selectedEvent, setSelectedEvent] = useState(null);
 
     useEffect(() => {
         loadEvents();
@@ -111,11 +111,15 @@ function Dashboard() {
             const response = await eventAPI.getEvents();
             if (response.data.success) {
                 const calendarEvents = response.data.events.map(event => ({
-                    ...event,
+                    id: event._id,
+                    title: event.title,
                     start: new Date(event.startDate),
                     end: new Date(event.endDate),
-                    title: event.title,
-                    allDay: event.isAllDay
+                    allDay: event.isAllDay,
+                    repeat: event.repeat,
+                    participants: event.participants,
+                    location: event.location,
+                    description: event.description
                 }));
                 setEvents(calendarEvents);
             }
@@ -145,12 +149,35 @@ function Dashboard() {
 
     const handleToggleTodo = async (todoId) => {
         try {
+            // Find the todo and update its status optimistically
+            const todoToUpdate = todos.find(todo => todo._id === todoId);
+            const newStatus = todoToUpdate.status === 'Completed' ? 'Incomplete' : 'Completed';
+            
+            // Update UI immediately
+            const updatedTodos = todos.map(todo => 
+                todo._id === todoId 
+                    ? { ...todo, status: newStatus } 
+                    : todo
+            );
+            setTodos(updatedTodos);
+
+            // Sync with server
             const response = await todoAPI.toggleStatus(todoId);
             if (response.data.success) {
+                if (newStatus === 'Completed') {
+                    // Add a small delay before removing completed todo
+                    setTimeout(() => {
+                        handleDeleteTodo(todoId);
+                    }, 1000); // 500ms delay for animation
+                }
+            } else {
+                // If server update fails, revert the change
                 await loadTodos();
             }
         } catch (error) {
             console.error('Error toggling todo:', error);
+            // Revert on error
+            await loadTodos();
         }
     };
 
@@ -159,7 +186,34 @@ function Dashboard() {
     };
 
     const handleSelectEvent = (event) => {
-        // Will implement later
+        setSelectedEvent(event);
+        setShowCreatePanel(true);
+        setActiveCreateTab('event');
+        setNewEvent({
+            title: event.title,
+            isAllDay: event.allDay,
+            startDate: event.start,
+            endDate: event.end,
+            repeat: event.repeat || 'none',
+            participants: event.participants || [],
+            location: event.location || '',
+            description: event.description || ''
+        });
+    };
+
+    const handleDoubleClickEvent = (event) => {
+        setSelectedEvent(event);
+        setShowCreatePanel(true);
+        setNewEvent({
+            title: event.title,
+            isAllDay: event.allDay,
+            startDate: event.start,
+            endDate: event.end,
+            repeat: event.repeat || 'none',
+            participants: event.participants || [],
+            location: event.location || '',
+            description: event.description || ''
+        });
     };
 
     const handleAddTodo = async () => {
@@ -182,29 +236,29 @@ function Dashboard() {
     };
 
     const handleAddEvent = async () => {
-        if (!newEvent.title) return;
-        
-        // Validate dates
-        const startDate = new Date(newEvent.startDate);
-        const endDate = new Date(newEvent.endDate);
-        
-        if (endDate < startDate) {
-            alert('End date cannot be before start date');
-            return;
-        }
+        if (!newEvent.title.trim()) return;
 
         try {
-            const eventData = {
+            let eventData = {
                 ...newEvent,
-                startDate: startDate.toISOString(),
-                endDate: endDate.toISOString(),
-                participants: newEvent.participants.map(p => p.email).filter(Boolean)
+                title: newEvent.title.trim(),
+                location: newEvent.location.trim(),
+                description: newEvent.description.trim(),
+                participants: newEvent.participants.map(p => ({
+                    email: p.email.trim(),
+                    status: 'pending'
+                })).filter(p => p.email)
             };
 
+            // If it's an all-day event, ensure the times are set correctly
             if (newEvent.isAllDay) {
-                // Set time to start of day for all-day events
-                eventData.startDate = new Date(startDate.setHours(0, 0, 0, 0)).toISOString();
-                eventData.endDate = new Date(endDate.setHours(23, 59, 59, 999)).toISOString();
+                const date = new Date(newEvent.startDate);
+                const year = date.getFullYear();
+                const month = date.getMonth();
+                const day = date.getDate();
+                
+                eventData.startDate = new Date(year, month, day, 0, 0, 0);
+                eventData.endDate = new Date(year, month, day, 23, 59, 59);
             }
 
             const response = await eventAPI.createEvent(eventData);
@@ -212,196 +266,394 @@ function Dashboard() {
                 await loadEvents();
                 setNewEvent({
                     title: '',
+                    isAllDay: false,
                     startDate: new Date(),
                     endDate: new Date(),
-                    description: '',
-                    isAllDay: false,
                     repeat: 'none',
-                    location: '',
                     participants: [],
-                    conferencing: '',
-                    category: 'General'
+                    location: '',
+                    description: ''
                 });
                 setShowCreatePanel(false);
             }
         } catch (error) {
             console.error('Error creating event:', error);
-            alert('Failed to create event. Please try again.');
         }
+    };
+
+    const handleUpdateEvent = async () => {
+        if (!newEvent.title.trim()) return;
+
+        try {
+            let eventData = {
+                ...newEvent,
+                title: newEvent.title.trim(),
+                location: newEvent.location.trim(),
+                description: newEvent.description.trim(),
+                participants: newEvent.participants.map(p => ({
+                    email: p.email.trim(),
+                    status: 'pending'
+                })).filter(p => p.email)
+            };
+
+            if (newEvent.isAllDay) {
+                const date = new Date(newEvent.startDate);
+                const year = date.getFullYear();
+                const month = date.getMonth();
+                const day = date.getDate();
+                
+                eventData.startDate = new Date(year, month, day, 0, 0, 0);
+                eventData.endDate = new Date(year, month, day, 23, 59, 59);
+            }
+
+            const response = await eventAPI.updateEvent(selectedEvent.id, eventData);
+            if (response.data.success) {
+                await loadEvents();
+                setNewEvent({
+                    title: '',
+                    isAllDay: false,
+                    startDate: new Date(),
+                    endDate: new Date(),
+                    repeat: 'none',
+                    participants: [],
+                    location: '',
+                    description: ''
+                });
+                setShowCreatePanel(false);
+                setSelectedEvent(null);
+            }
+        } catch (error) {
+            console.error('Error updating event:', error);
+        }
+    };
+
+    const handleDeleteEvent = async (eventId) => {
+        try {
+            // Optimistically remove the event from UI first
+            const updatedEvents = events.filter(event => event.id !== eventId);
+            setEvents(updatedEvents);
+            setSelectedEvent(null);
+            setShowCreatePanel(false);
+
+            // Then sync with server
+            const response = await eventAPI.deleteEvent(eventId);
+            if (!response.data.success) {
+                // If delete failed, restore the events
+                await loadEvents();
+                console.error('Failed to delete event');
+            }
+        } catch (error) {
+            // If there was an error, reload events to ensure UI is in sync
+            await loadEvents();
+            console.error('Error deleting event:', error);
+        }
+    };
+
+    const handleDeleteTodo = async (todoId) => {
+        try {
+            // Optimistically remove the todo from UI
+            const updatedTodos = todos.filter(todo => todo._id !== todoId);
+            setTodos(updatedTodos);
+
+            // Then sync with server
+            const response = await todoAPI.deleteTodo(todoId);
+            if (!response.data.success) {
+                // If delete failed, restore the todos
+                await loadTodos();
+                console.error('Failed to delete todo');
+            }
+        } catch (error) {
+            // If there was an error, reload todos to ensure UI is in sync
+            await loadTodos();
+            console.error('Error deleting todo:', error);
+        }
+    };
+
+    const ensureDate = (date) => {
+        if (!date) return new Date();
+        return date instanceof Date ? date : new Date(date);
     };
 
     const createPanel = () => {
         return (
             <div className="right-panel">
                 <div className="right-panel-header">
-                    <h2>Event</h2>
+                    <div className="create-panel-tabs">
+                        <button 
+                            className={`tab-button ${activeCreateTab === 'event' ? 'active' : ''} btn btn-light`}
+                            onClick={() => setActiveCreateTab('event')}
+                        >
+                            Event
+                        </button>
+                        <button 
+                            className={`tab-button ${activeCreateTab === 'todo' ? 'active' : ''} btn btn-light`}
+                            onClick={() => setActiveCreateTab('todo')}
+                        >
+                            Todo
+                        </button>
+                    </div>
                     <button 
                         className="btn-close" 
-                        onClick={() => setShowCreatePanel(false)}
+                        onClick={() => {
+                            setShowCreatePanel(false);
+                            setSelectedEvent(null);
+                            setNewEvent({
+                                title: '',
+                                isAllDay: false,
+                                startDate: new Date(),
+                                endDate: new Date(),
+                                repeat: 'none',
+                                participants: [],
+                                location: '',
+                                description: ''
+                            });
+                        }}
                     ></button>
                 </div>
 
-                <div className="create-event-form">
-                    <div className="mb-3">
-                        <input
-                            type="text"
-                            className="form-control form-control-lg border-0"
-                            placeholder="Title"
-                            value={newEvent.title}
-                            onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
-                        />
-                    </div>
-
-                    <div className="mb-3 d-flex align-items-center gap-2">
-                        <i className="bi bi-clock text-muted"></i>
-                        {!newEvent.isAllDay ? (
-                            <>
-                                <input
-                                    type="datetime-local"
-                                    className="form-control"
-                                    value={format(newEvent.startDate, "yyyy-MM-dd'T'HH:mm")}
-                                    onChange={(e) => {
-                                        const newDate = new Date(e.target.value);
-                                        setNewEvent(prev => ({
-                                            ...prev,
-                                            startDate: newDate,
-                                            endDate: prev.endDate < newDate ? newDate : prev.endDate
-                                        }));
-                                    }}
-                                />
-                                <input
-                                    type="datetime-local"
-                                    className="form-control"
-                                    value={format(newEvent.endDate, "yyyy-MM-dd'T'HH:mm")}
-                                    min={format(newEvent.startDate, "yyyy-MM-dd'T'HH:mm")}
-                                    onChange={(e) => setNewEvent(prev => ({
-                                        ...prev,
-                                        endDate: new Date(e.target.value)
-                                    }))}
-                                />
-                            </>
-                        ) : (
-                            <>
-                                <input
-                                    type="date"
-                                    className="form-control"
-                                    value={format(newEvent.startDate, "yyyy-MM-dd")}
-                                    onChange={(e) => {
-                                        const newDate = new Date(e.target.value);
-                                        setNewEvent(prev => ({
-                                            ...prev,
-                                            startDate: newDate,
-                                            endDate: newDate
-                                        }));
-                                    }}
-                                />
-                            </>
-                        )}
-                    </div>
-
-                    <div className="mb-3 d-flex align-items-center gap-2">
-                        <div className="form-check form-switch">
+                {activeCreateTab === 'event' ? (
+                    <div className="create-event-form">
+                        <div className="mb-3">
                             <input
-                                className="form-check-input"
-                                type="checkbox"
-                                checked={newEvent.isAllDay}
+                                type="text"
+                                className="form-control form-control-lg border-0"
+                                placeholder="Title"
+                                value={newEvent.title}
+                                onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+                            />
+                        </div>
+
+                        <div className="mb-3 d-flex align-items-center gap-2">
+                            <i className="bi bi-clock text-muted"></i>
+                            {!newEvent.isAllDay ? (
+                                <>
+                                    <input
+                                        type="datetime-local"
+                                        className="form-control"
+                                        value={format(ensureDate(newEvent.startDate), "yyyy-MM-dd'T'HH:mm")}
+                                        onChange={(e) => {
+                                            const date = new Date(e.target.value);
+                                            setNewEvent(prev => ({
+                                                ...prev,
+                                                startDate: date,
+                                                endDate: prev.endDate < date ? date : prev.endDate
+                                            }));
+                                        }}
+                                    />
+                                    <input
+                                        type="datetime-local"
+                                        className="form-control"
+                                        value={format(ensureDate(newEvent.endDate), "yyyy-MM-dd'T'HH:mm")}
+                                        onChange={(e) => {
+                                            const date = new Date(e.target.value);
+                                            setNewEvent(prev => ({
+                                                ...prev,
+                                                endDate: date
+                                            }));
+                                        }}
+                                    />
+                                </>
+                            ) : (
+                                <>
+                                    <input
+                                        type="date"
+                                        className="form-control"
+                                        value={format(ensureDate(newEvent.startDate), "yyyy-MM-dd")}
+                                        onChange={(e) => {
+                                            const dateStr = e.target.value;
+                                            const [year, month, day] = dateStr.split('-');
+                                            const startDate = new Date(year, parseInt(month) - 1, day, 0, 0, 0);
+                                            const endDate = new Date(year, parseInt(month) - 1, day, 23, 59, 59);
+                                            
+                                            setNewEvent(prev => ({
+                                                ...prev,
+                                                startDate: startDate,
+                                                endDate: endDate
+                                            }));
+                                        }}
+                                    />
+                                </>
+                            )}
+                        </div>
+
+                        <div className="mb-3 d-flex align-items-center gap-2">
+                            <div className="form-check form-switch">
+                                <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    checked={newEvent.isAllDay}
+                                    onChange={(e) => setNewEvent({ 
+                                        ...newEvent, 
+                                        isAllDay: e.target.checked 
+                                    })}
+                                />
+                                <label className="form-check-label">All-day</label>
+                            </div>
+                        </div>
+
+                        <div className="mb-3 d-flex align-items-center gap-2">
+                            <i className="bi bi-arrow-repeat text-muted"></i>
+                            <select 
+                                className="form-select"
+                                value={newEvent.repeat}
                                 onChange={(e) => setNewEvent({ 
                                     ...newEvent, 
-                                    isAllDay: e.target.checked 
+                                    repeat: e.target.value 
+                                })}
+                            >
+                                <option value="none">Does not repeat</option>
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                                <option value="yearly">Yearly</option>
+                            </select>
+                        </div>
+
+                        <div className="mb-3 d-flex align-items-center gap-2">
+                            <i className="bi bi-people text-muted"></i>
+                            <input
+                                type="text"
+                                className="form-control"
+                                placeholder="Add participants"
+                                value={newEvent.participants.map(p => p.email).join(',')}
+                                onChange={(e) => setNewEvent({ 
+                                    ...newEvent, 
+                                    participants: e.target.value.split(',').map(p => ({ email: p.trim() }))
                                 })}
                             />
-                            <label className="form-check-label">All-day</label>
+                        </div>
+
+                        <div className="mb-3 d-flex align-items-center gap-2">
+                            <i className="bi bi-geo-alt text-muted"></i>
+                            <input
+                                type="text"
+                                className="form-control"
+                                placeholder="Add location"
+                                value={newEvent.location}
+                                onChange={(e) => setNewEvent({ 
+                                    ...newEvent, 
+                                    location: e.target.value 
+                                })}
+                            />
+                        </div>
+
+                        <div className="mb-3 d-flex align-items-center gap-2">
+                            <i className="bi bi-file-text text-muted"></i>
+                            <textarea
+                                className="form-control"
+                                placeholder="Description"
+                                value={newEvent.description}
+                                onChange={(e) => setNewEvent({ 
+                                    ...newEvent, 
+                                    description: e.target.value 
+                                })}
+                            />
+                        </div>
+
+                        <div className="d-flex justify-content-end gap-2">
+                            {selectedEvent ? (
+                                <>
+                                    <button 
+                                        className="btn btn-light" 
+                                        onClick={() => {
+                                            setShowCreatePanel(false);
+                                            setSelectedEvent(null);
+                                            setNewEvent({
+                                                title: '',
+                                                isAllDay: false,
+                                                startDate: new Date(),
+                                                endDate: new Date(),
+                                                repeat: 'none',
+                                                participants: [],
+                                                location: '',
+                                                description: ''
+                                            });
+                                        }}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button 
+                                        className="btn btn-primary"
+                                        onClick={handleUpdateEvent}
+                                        disabled={!newEvent.title}
+                                    >
+                                        Update
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <button 
+                                        className="btn btn-light" 
+                                        onClick={() => setShowCreatePanel(false)}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button 
+                                        className="btn btn-primary"
+                                        onClick={handleAddEvent}
+                                        disabled={!newEvent.title}
+                                    >
+                                        Save
+                                    </button>
+                                </>
+                            )}
                         </div>
                     </div>
+                ) : (
+                    <div className="create-todo-form">
+                        <div className="mb-3">
+                            <input
+                                type="text"
+                                className="form-control form-control-lg border-0"
+                                placeholder="Task name"
+                                value={newTodo.title}
+                                onChange={(e) => setNewTodo({ ...newTodo, title: e.target.value })}
+                            />
+                        </div>
 
-                    <div className="mb-3 d-flex align-items-center gap-2">
-                        <i className="bi bi-arrow-repeat text-muted"></i>
-                        <select 
-                            className="form-select"
-                            value={newEvent.repeat}
-                            onChange={(e) => setNewEvent({ 
-                                ...newEvent, 
-                                repeat: e.target.value 
-                            })}
-                        >
-                            <option value="none">Does not repeat</option>
-                            <option value="daily">Daily</option>
-                            <option value="weekly">Weekly</option>
-                            <option value="monthly">Monthly</option>
-                        </select>
-                    </div>
+                        <div className="mb-3 d-flex align-items-center gap-2">
+                            <i className="bi bi-clock text-muted"></i>
+                            <input
+                                type="datetime-local"
+                                className="form-control"
+                                value={format(ensureDate(newTodo.dueDate), "yyyy-MM-dd'T'HH:mm")}
+                                onChange={(e) => setNewTodo({ 
+                                    ...newTodo, 
+                                    dueDate: new Date(e.target.value) 
+                                })}
+                            />
+                        </div>
 
-                    <div className="mb-3 d-flex align-items-center gap-2">
-                        <i className="bi bi-people text-muted"></i>
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Add participants"
-                            value={newEvent.participants.map(p => p.email).join(',')}
-                            onChange={(e) => setNewEvent({ 
-                                ...newEvent, 
-                                participants: e.target.value.split(',').map(p => ({ email: p.trim() }))
-                            })}
-                        />
-                    </div>
+                        <div className="mb-3 d-flex align-items-center gap-2">
+                            <i className="bi bi-file-text text-muted"></i>
+                            <textarea
+                                className="form-control"
+                                placeholder="Description"
+                                value={newTodo.description}
+                                onChange={(e) => setNewTodo({ 
+                                    ...newTodo, 
+                                    description: e.target.value 
+                                })}
+                            />
+                        </div>
 
-                    <div className="mb-3 d-flex align-items-center gap-2">
-                        <i className="bi bi-camera-video text-muted"></i>
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Add conferencing"
-                            value={newEvent.conferencing}
-                            onChange={(e) => setNewEvent({ 
-                                ...newEvent, 
-                                conferencing: e.target.value 
-                            })}
-                        />
+                        <div className="d-flex justify-content-end gap-2">
+                            <button 
+                                className="btn btn-light" 
+                                onClick={() => setShowCreatePanel(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                className="btn btn-primary"
+                                onClick={handleAddTodo}
+                                disabled={!newTodo.title}
+                            >
+                                Save
+                            </button>
+                        </div>
                     </div>
-
-                    <div className="mb-3 d-flex align-items-center gap-2">
-                        <i className="bi bi-geo-alt text-muted"></i>
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Add location"
-                            value={newEvent.location}
-                            onChange={(e) => setNewEvent({ 
-                                ...newEvent, 
-                                location: e.target.value 
-                            })}
-                        />
-                    </div>
-
-                    <div className="mb-3 d-flex align-items-center gap-2">
-                        <i className="bi bi-file-text text-muted"></i>
-                        <textarea
-                            className="form-control"
-                            placeholder="Description"
-                            value={newEvent.description}
-                            onChange={(e) => setNewEvent({ 
-                                ...newEvent, 
-                                description: e.target.value 
-                            })}
-                        />
-                    </div>
-
-                    <div className="d-flex justify-content-end gap-2">
-                        <button 
-                            className="btn btn-light" 
-                            onClick={() => setShowCreatePanel(false)}
-                        >
-                            Cancel
-                        </button>
-                        <button 
-                            className="btn btn-primary"
-                            onClick={handleAddEvent}
-                            disabled={!newEvent.title}
-                        >
-                            Save
-                        </button>
-                    </div>
-                </div>
+                )}
             </div>
         );
     };
@@ -418,7 +670,14 @@ function Dashboard() {
                 </div>
 
                 <div className="add-task-button">
-                    <button className="btn btn-link text-primary">
+                    <button 
+                        className="btn btn-link text-primary"
+                        onClick={() => {
+                            setShowTaskDisplayPanel(false);  // Close task panel
+                            setShowCreatePanel(true);        // Open create panel
+                            setActiveCreateTab('todo');      // Switch to todo tab
+                        }}
+                    >
                         <i className="bi bi-plus-circle text-primary"></i>
                         <span className="ms-2"> + Add a task</span>
                     </button>
@@ -435,22 +694,35 @@ function Dashboard() {
                 ) : (
                     <div className="tasks-list">
                         {todos.map(todo => (
-                            <div key={todo._id} className="task-item">
-                                <div className="form-check">
-                                    <input
-                                        type="checkbox"
-                                        className="form-check-input"
-                                        checked={todo.status === 'Completed'}
-                                        onChange={() => handleToggleTodo(todo._id)}
-                                    />
-                                    <label className="form-check-label">
-                                        <div>
-                                            <div className="task-title">{todo.title}</div>
-                                            <div className="task-due">
-                                                {format(new Date(todo.dueDate), 'PPp')}
+                            <div 
+                                key={todo._id} 
+                                className={`task-item ${todo.status === 'Completed' ? 'completed' : ''}`}
+                            >
+                                <div className="d-flex justify-content-between align-items-start">
+                                    <div className="form-check">
+                                        <input
+                                            type="checkbox"
+                                            className="form-check-input"
+                                            checked={todo.status === 'Completed'}
+                                            onChange={() => handleToggleTodo(todo._id)}
+                                        />
+                                        <label className="form-check-label">
+                                            <div>
+                                                <div className={`task-title ${todo.status === 'Completed' ? 'text-decoration-line-through' : ''}`}>
+                                                    {todo.title}
+                                                </div>
+                                                <div className="task-due">
+                                                    {format(new Date(todo.dueDate), 'PPp')}
+                                                </div>
                                             </div>
-                                        </div>
-                                    </label>
+                                        </label>
+                                    </div>
+                                    <button 
+                                        className="btn btn-link text-danger btn-sm"
+                                        onClick={() => handleDeleteTodo(todo._id)}
+                                    >
+                                        <i className="bi bi-trash"></i>
+                                    </button>
                                 </div>
                             </div>
                         ))}
@@ -464,6 +736,23 @@ function Dashboard() {
             </div>
         );
     };
+
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            // Check if we have a selected event and if we're not in an input field
+            if (selectedEvent && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
+                // Handle both Delete and Backspace keys
+                if (e.key === 'Delete' || e.key === 'Backspace') {
+                    e.preventDefault(); // Prevent any default behavior
+                    handleDeleteEvent(selectedEvent.id);
+                    setSelectedEvent(null);
+                }
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [selectedEvent, handleDeleteEvent]); // Add handleDeleteEvent to dependencies
 
     return (
         <div className="dashboard-container">
@@ -498,6 +787,8 @@ function Dashboard() {
                             selectable
                             onSelectSlot={handleSelect}
                             onSelectEvent={handleSelectEvent}
+                            onDoubleClickEvent={handleDoubleClickEvent}
+                            selected={selectedEvent}
                         />
                     </div>
                 </div>

@@ -1,0 +1,12 @@
+/* You can import Login.css styles */
+@import './Login.css';
+
+/* Add any Register-specific styles here */
+.register a {
+    color: #000;
+    text-decoration: none;
+}
+
+.register a:hover {
+    text-decoration: underline;
+} 

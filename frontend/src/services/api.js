@@ -46,6 +46,7 @@ const authAPI = {
   logout: () => {
       localStorage.removeItem('token');
   },
+  googleLogin: (data) => api.post('/auth/google', data),
 };
 
 const eventAPI = {

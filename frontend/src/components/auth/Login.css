@@ -1,0 +1,114 @@
+.login-container {
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+.login-form {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.login-form-content {
+    max-width: 350px;
+    width: 100%;
+}
+
+.image-container {
+    height: 100%;
+    background-color: #d3d9ee;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.features-content {
+    color: #495057;
+}
+
+.features-content h2 {
+    margin-bottom: 2rem;
+    font-size: 1.75rem;
+}
+
+.features-content ul li {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+
+}
+
+.social-login {
+    padding-top: 1rem;
+    border-top: 1px solid #dee2e6;
+}
+
+.login-image {
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 2rem;
+}
+
+.form-label {
+    color: rgb(114, 114, 114);
+}
+
+.login-button {
+    background-color: black;
+    color: white;
+    border: none;
+}
+
+.login-button:hover {
+    background-color: rgb(58, 58, 58);
+}
+
+.login-title {
+    padding-bottom: 30px;
+    text-align: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .image-container {
+        display: none;
+    }
+    
+    .login-form {
+        width: 100%;
+    }
+}
+
+.form-control:focus {
+    border-color: #d3d3d3;
+    box-shadow: 0 0 0 0.2rem rgba(211, 211, 211, 0.25);
+}
+
+/* Remove the default blue outline from Bootstrap */
+.form-control:focus {
+    outline: 0;
+}
+
+/* Also update the autofill background color */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 30px white inset !important;
+    -webkit-text-fill-color: #495057 !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+.register p {
+    font-size: 14px;
+    text-align: center;
+}
+
+.register {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 40px;
+}

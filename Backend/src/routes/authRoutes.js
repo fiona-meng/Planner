@@ -12,7 +12,7 @@ router.use((req, res, next) => {
 // Public routes (no auth required)
 router.post('/login', authController.login);
 router.post('/register', authController.register);
-
+router.post('/google', authController.googleLogin);
 // Protected routes (auth required)
 router.use(auth);
 // Add any protected auth routes here

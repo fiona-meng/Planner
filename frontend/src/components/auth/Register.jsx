@@ -1,23 +1,22 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { authAPI } from '../../services/api';
 import { useState } from 'react';
+import loginImage from '../../assets/images/login.jpg';
+import './Register.css';
 
 function Register() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
         setError('');
 
         if (password !== confirmPassword) {
             setError('Passwords do not match');
-            setLoading(false);
             return;
         }
 
@@ -29,91 +28,63 @@ function Register() {
             }
         } catch (error) {
             setError(error.response?.data?.message || 'Registration failed');
-        } finally {
-            setLoading(false);
         }
     };
 
     return (
-        <div className="container-fluid bg-light min-vh-100">
-            <div className="row justify-content-center align-items-center min-vh-100">
-                <div className="col-12 col-sm-8 col-md-6 col-lg-4">
-                    <div className="card shadow-lg border-0 rounded-lg">
-                        <div className="card-header bg-primary text-white text-center py-3">
-                            <h3 className="mb-0">Create Account</h3>
-                        </div>
-                        <div className="card-body p-4 p-sm-5">
-                            {error && (
-                                <div className="alert alert-danger" role="alert">
-                                    {error}
-                                </div>
-                            )}
-                            
-                            <form onSubmit={handleSubmit}>
-                                <div className="form-floating mb-3">
-                                    <input
-                                        type="email"
-                                        className="form-control"
-                                        id="email"
-                                        placeholder="name@example.com"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        required
-                                        disabled={loading}
-                                    />
-                                    <label htmlFor="email">Email address</label>
-                                </div>
-
-                                <div className="form-floating mb-3">
-                                    <input
-                                        type="password"
-                                        className="form-control"
-                                        id="password"
-                                        placeholder="Password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        required
-                                        disabled={loading}
-                                    />
-                                    <label htmlFor="password">Password</label>
-                                </div>
-
-                                <div className="form-floating mb-4">
-                                    <input
-                                        type="password"
-                                        className="form-control"
-                                        id="confirmPassword"
-                                        placeholder="Confirm Password"
-                                        value={confirmPassword}
-                                        onChange={(e) => setConfirmPassword(e.target.value)}
-                                        required
-                                        disabled={loading}
-                                    />
-                                    <label htmlFor="confirmPassword">Confirm Password</label>
-                                </div>
-
-                                <div className="d-grid">
-                                    <button 
-                                        type="submit" 
-                                        className="btn btn-primary btn-lg"
-                                        disabled={loading}
-                                    >
-                                        {loading ? (
-                                            <>
-                                                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                                Creating Account...
-                                            </>
-                                        ) : 'Create Account'}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                        <div className="card-footer text-center py-3 bg-light">
-                            <div className="small">
-                                Already have an account? <Link to="/login" className="text-primary">Sign in!</Link>
+        <div className="login-container">
+            <div className="row h-100 m-0">
+                <div className="col-md-7 login-form">
+                    <div className="login-form-content">
+                        <h1 className="login-title">Sign up</h1>
+                        {error && <div className="alert alert-danger">{error}</div>}
+                        
+                        <form onSubmit={handleSubmit}>
+                            <div className="mb-3">
+                                <label className="form-label">Email</label>
+                                <input
+                                    type="email"
+                                    className="form-control"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
                             </div>
-                        </div>
+
+                            <div className="mb-3">
+                                <label className="form-label">Password</label>
+                                <input
+                                    type="password"
+                                    className="form-control"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
+                            </div>
+
+                            <div className="mb-3">
+                                <label className="form-label">Confirm Password</label>
+                                <input
+                                    type="password"
+                                    className="form-control"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    required
+                                />
+                            </div>
+
+                            <button type="submit" className="btn btn-primary w-100 login-button">
+                                Sign up
+                            </button>
+
+                            <div className="mb-3 register">
+                                <p>Already have an account? <Link to="/login">Log in</Link></p>
+                            </div>
+                        </form>
                     </div>
+                </div>
+                <div className="col-md-5 image-container">
+                    <img src={loginImage} alt="Register" className="login-image" />
                 </div>
             </div>
         </div>
