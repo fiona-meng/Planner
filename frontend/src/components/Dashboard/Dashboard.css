@@ -231,9 +231,6 @@
     margin-bottom: 5px;
 }
 
-.todo-item .text-muted {
-    font-size: 0.8em;
-}
 
 .right-panel {
     position: static;
@@ -465,42 +462,46 @@
     font-size: 14px;
 }
 
-.create-event-form input.form-control-lg {
-    font-size: 24px;
-    padding: 0.5rem 0;
+/* Remove the calendar icon */
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    display: none;
 }
 
-.create-event-form input.form-control-lg::placeholder {
-    color: #999;
+/* Or if you want to hide it completely */
+input[type="datetime-local"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
 }
 
-.create-event-form .form-control {
-    border: none;
-    border-radius: 0;
-    padding: 0.5rem 0;
-    background: none;
-}
-
-.create-event-form .form-control:focus {
-    box-shadow: none;
-    border-bottom: 2px solid #0d6efd;
-}
-
-.create-event-form .form-select {
-    border: none;
-    border-radius: 0;
-    padding: 0.5rem 0;
-    background-position: right 0 center;
-}
-
-.create-event-form .bi {
-    font-size: 1.2rem;
-    width: 24px;
-}
-
-.create-panel-tabs {
+.toggle-buttons {
     display: flex;
-    gap: 20px;
+    width: 100%;
+    gap: 0;  /* Remove gap between buttons */
+    margin-bottom: 1rem;
+}
+
+.toggle-buttons button {
+    flex: 1;  /* Make buttons take equal space */
+    padding: 0.5rem;
+    border: 1px solid #dee2e6;
+    background-color: white;
+    transition: all 0.3s ease;
+}
+
+.toggle-buttons button.active {
+    background-color: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+}
+
+/* Remove border radius from middle edges */
+.toggle-buttons button:first-child {
+    border-radius: 0.375rem 0 0 0.375rem;
+}
+
+.toggle-buttons button:last-child {
+    border-radius: 0 0.375rem 0.375rem 0;
 }
 
 .tab-button {
@@ -522,3 +523,187 @@
     border-bottom-color: #0d6efd;
 }
 
+.eventTodoButton {
+    width: 100%;
+    padding: 8px 16px;
+    border: none;
+    background: none;
+    font-size: 16px;
+    color: #6b6b6b;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.eventTodoButton:hover {
+    color: #333;
+}
+
+
+/* Add styles for the button row */
+.right-panel-header .row {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.right-panel-header .col-md-5,
+.right-panel-header .col-md-2 {
+    padding: 0;
+    display: flex;
+    justify-content: center;
+}
+
+.right-panel-header .btn-close {
+    display: flex;
+    justify-content: flex-end;
+    padding: 8px 16px;
+    font-size: 0.8rem !important;
+    width: 20px !important;
+    height: 20px !important;
+    opacity: 0.5;
+}
+
+.right-panel-header .btn-close:hover {
+    opacity: 0.75;
+}
+
+/* Ensure the button container is properly sized */
+.right-panel-header .col-md-2 {
+    padding: 0;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.icon {
+    width: 10px;
+    height: 10px;
+    color: #6b6b6b;  /* matches your current muted color */
+}
+
+/* Style the icons */
+.create-todo-form svg,
+.create-event-form svg {
+    color: #6b6b6b;
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
+}
+
+/* Form controls */
+.create-todo-form .form-control,
+.create-event-form .form-control,
+.create-event-form .form-select {
+    font-size: 16px;
+    border: none;
+    background: transparent;
+    padding-left: 36px;  /* Make room for the icon */
+}
+
+.create-todo-form .form-control:focus,
+.create-event-form .form-control:focus,
+.create-event-form .form-select:focus {
+    box-shadow: none;
+    outline: none;
+}
+
+.create-button {
+    background-color: #040404 !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 30px !important;
+    padding: 8px 16px !important;
+    font-size: 16px !important;
+    font-weight: 500 !important;
+}
+
+.form-select {
+    border: none !important;
+}
+
+.form-select:focus {
+    box-shadow: none !important;
+}
+
+/* Position the icon and date picker */
+.create-todo-form .d-flex,
+.create-event-form .d-flex {
+    position: relative;
+}
+
+.select-date-start {
+    border: none !important;
+    max-width: 150px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    margin-left: 50px !important;
+}
+
+.select-date-start:focus {
+    box-shadow: none !important;
+}
+
+.select-date-end {
+    border: none !important;
+    max-width: 150px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    margin-left: 5px !important;
+}
+
+.select-date-end:focus {
+    box-shadow: none !important;
+}
+
+.location-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-top: 4px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.suggestion-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    border-bottom: 1px solid #eee;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item:hover {
+    background-color: #f8f9fa;
+}
+
+.email-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.email-chips .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    font-weight: normal;
+    border: 1px solid #dee2e6;
+}
+
+.email-chips .btn-close {
+    font-size: 10px;
+    padding: 2px;
+}
