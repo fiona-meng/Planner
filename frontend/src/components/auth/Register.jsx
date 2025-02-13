@@ -1,7 +1,7 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { authAPI } from '../../services/api';
 import { useState } from 'react';
-import loginImage from '../../assets/images/login.jpg';
+import loginImage from '../../assets/images/new_login.png';
 import './Register.css';
 
 function Register() {

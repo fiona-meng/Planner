@@ -8,7 +8,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import './Dashboard.css';
 import { eventAPI, todoAPI } from '../../services/api';
 import Icon from '@mdi/react';
-import { mdiClockOutline, mdiCheckboxMarkedCirclePlusOutline, mdiFilterVariant, mdiAccount, mdiMapMarker, mdiRepeatVariant } from '@mdi/js';
+import { mdiClockOutline, mdiCheckboxMarkedCirclePlusOutline, mdiFilterVariant, mdiAccount, mdiMapMarker, mdiRepeatVariant, mdiPencil} from '@mdi/js';
 import axios from 'axios';
 
 const locales = {
@@ -90,7 +90,7 @@ function Dashboard() {
         title: '',
         isAllDay: false,
         startDate: new Date(),
-        endDate: new Date(),
+        endDate: new Date(new Date().setHours(new Date().getHours() + 1)),
         repeat: 'none',
         participants: [],
         currentEmail: '',
@@ -100,6 +100,7 @@ function Dashboard() {
     const [activeCreateTab, setActiveCreateTab] = useState('event');
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [locationSuggestions, setLocationSuggestions] = useState([]);
+    const [selectedSlot, setSelectedSlot] = useState(null);
 
     useEffect(() => {
         loadEvents();
@@ -179,7 +180,23 @@ function Dashboard() {
     };
 
     const handleSelect = ({ start, end }) => {
-        // Will implement later
+        setShowTaskDisplayPanel(false);
+        setShowCreatePanel(true);
+        setActiveCreateTab('event');
+        setSelectedEvent(null);
+        setSelectedSlot({ start, end });
+        
+        setNewEvent({
+            title: '',
+            isAllDay: false,
+            startDate: start,
+            endDate: end,
+            repeat: 'none',
+            participants: [],
+            currentEmail: '',
+            location: '',
+            description: ''
+        });
     };
 
     const handleSelectEvent = (event) => {
@@ -232,6 +249,9 @@ function Dashboard() {
                     dueDate: new Date(),
                     description: ''
                 });
+                // Switch panels after successful todo creation
+                setShowCreatePanel(false);
+                setShowTaskDisplayPanel(true);
             }
         } catch (error) {
             console.error('Error creating todo:', error);
@@ -271,13 +291,14 @@ function Dashboard() {
                     title: '',
                     isAllDay: false,
                     startDate: new Date(),
-                    endDate: new Date(),
+                    endDate: new Date(new Date().setHours(new Date().getHours() + 2)),
                     repeat: 'none',
                     participants: [],
                     location: '',
                     description: '',
                     currentEmail: ''
                 });
+                setSelectedSlot(null);
                 setShowCreatePanel(false);
             }
         } catch (error) {
@@ -317,7 +338,7 @@ function Dashboard() {
                     title: '',
                     isAllDay: false,
                     startDate: new Date(),
-                    endDate: new Date(),
+                    endDate: new Date(new Date().setHours(new Date().getHours() + 2)),
                     repeat: 'none',
                     participants: [],
                     location: '',
@@ -402,11 +423,12 @@ function Dashboard() {
                                 onClick={() => {
                                     setShowCreatePanel(false);
                                     setSelectedEvent(null);
+                                    setSelectedSlot(null);
                                     setNewEvent({
                                         title: '',
                                         isAllDay: false,
                                         startDate: new Date(),
-                                        endDate: new Date(),
+                                        endDate: new Date(new Date().setHours(new Date().getHours() + 2)),
                                         repeat: 'none',
                                         participants: [],
                                         location: '',
@@ -421,7 +443,11 @@ function Dashboard() {
 
                 {activeCreateTab === 'event' ? (
                     <div className="create-event-form">
-                        <div className="mb-3">
+                        <div className="mb-3 d-flex align-items-center gap-2">
+                            <Icon 
+                                path={mdiPencil}
+                                size={0.8}
+                            />
                             <input
                                 type="text"
                                 className="form-control form-control-lg border-0"
@@ -429,68 +455,6 @@ function Dashboard() {
                                 value={newEvent.title}
                                 onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
                             />
-                        </div>
-
-                        <div className="mb-3 d-flex align-items-center gap-2">
-                            <Icon 
-                                path={mdiClockOutline}
-                                className="text-muted"
-                                size={0.8}
-                            />
-                            {!newEvent.isAllDay ? (
-                                <>
-                                    <input
-                                        type="datetime-local"
-                                        className="form-control select-date-start"
-                                        value={format(ensureDate(newEvent.startDate), "yyyy-MM-dd'T'HH:mm")}
-                                        onChange={(e) => {
-                                            const date = new Date(e.target.value);
-                                            setNewEvent(prev => ({
-                                                ...prev,
-                                                startDate: date,
-                                                endDate: prev.endDate < date ? date : prev.endDate
-                                            }));
-                                        }}
-                                    />
-                                    <input
-                                        type="datetime-local"
-                                        className="form-control select-date-end"
-                                        value={format(ensureDate(newEvent.endDate), "yyyy-MM-dd'T'HH:mm")}
-                                        onChange={(e) => {
-                                            const date = new Date(e.target.value);
-                                            setNewEvent(prev => ({
-                                                ...prev,
-                                                endDate: date
-                                            }));
-                                        }}
-                                    />
-                                </>
-                            ) : (
-                                <>
-                                    <Icon 
-                                        path={mdiClockOutline}
-                                        className="text-muted"
-                                        size={0.8}
-                                    />
-                                    <input
-                                        type="date"
-                                        className="form-control"
-                                        value={format(ensureDate(newEvent.startDate), "yyyy-MM-dd")}
-                                        onChange={(e) => {
-                                            const dateStr = e.target.value;
-                                            const [year, month, day] = dateStr.split('-');
-                                            const startDate = new Date(year, parseInt(month) - 1, day, 0, 0, 0);
-                                            const endDate = new Date(year, parseInt(month) - 1, day, 23, 59, 59);
-                                            
-                                            setNewEvent(prev => ({
-                                                ...prev,
-                                                startDate: startDate,
-                                                endDate: endDate
-                                            }));
-                                        }}
-                                    />
-                                </>
-                            )}
                         </div>
 
                         <div className="mb-3 d-flex align-items-center gap-2">
@@ -506,6 +470,118 @@ function Dashboard() {
                                 />
                                 <label className="form-check-label">All-day</label>
                             </div>
+                        </div>
+
+                        <div className="mb-3 d-flex align-items-center gap-2">
+                            {!newEvent.isAllDay ? (
+                                <div className="date-time-picker-container">
+                                    <div className="date-time-row">
+                                        <span className="date-time-label">Start:</span>
+                                        <input
+                                            type="date"
+                                            className="form-control date-picker"
+                                            value={format(ensureDate(newEvent.startDate), "yyyy-MM-dd")}
+                                            onChange={(e) => {
+                                                const [year, month, day] = e.target.value.split('-');
+                                                const newDate = new Date(year, parseInt(month) - 1, day);
+                                                const currentStart = new Date(newEvent.startDate);
+                                                
+                                                newDate.setHours(
+                                                    currentStart.getHours(),
+                                                    currentStart.getMinutes(),
+                                                    currentStart.getSeconds()
+                                                );
+                                                
+                                                setNewEvent(prev => ({
+                                                    ...prev,
+                                                    startDate: newDate,
+                                                    endDate: prev.endDate < newDate ? newDate : prev.endDate
+                                                }));
+                                            }}
+                                        />
+                                        <input
+                                            type="time"
+                                            className="form-control time-picker"
+                                            value={format(ensureDate(newEvent.startDate), "HH:mm")}
+                                            onChange={(e) => {
+                                                const [hours, minutes] = e.target.value.split(':');
+                                                const newDate = new Date(newEvent.startDate);
+                                                newDate.setHours(hours, minutes);
+                                                
+                                                setNewEvent(prev => ({
+                                                    ...prev,
+                                                    startDate: newDate,
+                                                    endDate: prev.endDate < newDate ? newDate : prev.endDate
+                                                }));
+                                            }}
+                                        />
+                                    </div>
+                                    <div className="date-time-row">
+                                        <span className="date-time-label">End:</span>
+                                        <input
+                                            type="date"
+                                            className="form-control date-picker"
+                                            value={format(ensureDate(newEvent.endDate), "yyyy-MM-dd")}
+                                            onChange={(e) => {
+                                                const [year, month, day] = e.target.value.split('-');
+                                                const newDate = new Date(year, parseInt(month) - 1, day);
+                                                const currentEnd = new Date(newEvent.endDate);
+                                                
+                                                newDate.setHours(
+                                                    currentEnd.getHours(),
+                                                    currentEnd.getMinutes(),
+                                                    currentEnd.getSeconds()
+                                                );
+                                                
+                                                setNewEvent(prev => ({
+                                                    ...prev,
+                                                    endDate: newDate
+                                                }));
+                                            }}
+                                        />
+                                        <input
+                                            type="time"
+                                            className="form-control time-picker"
+                                            value={format(ensureDate(newEvent.endDate), "HH:mm")}
+                                            onChange={(e) => {
+                                                const [hours, minutes] = e.target.value.split(':');
+                                                const newDate = new Date(newEvent.endDate);
+                                                newDate.setHours(hours, minutes);
+                                                
+                                                setNewEvent(prev => ({
+                                                    ...prev,
+                                                    endDate: newDate
+                                                }));
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="date-picker-container">
+                                    <input
+                                        type="date"
+                                        className="form-control date-picker-all-day"
+                                        value={format(ensureDate(newEvent.startDate), "yyyy-MM-dd")}
+                                        onChange={(e) => {
+                                            const [year, month, day] = e.target.value.split('-');
+                                            const newDate = new Date(year, parseInt(month) - 1, day);
+                                            const currentStart = new Date(newEvent.startDate);
+                                            
+                                            newDate.setHours(
+                                                currentStart.getHours(),
+                                                currentStart.getMinutes(),
+                                                currentStart.getSeconds()
+                                            );
+                                            
+                                            setNewEvent(prev => ({
+                                                ...prev,
+                                                startDate: newDate,
+                                                endDate: prev.endDate < newDate ? newDate : prev.endDate
+                                            }));
+                                        }}
+                                    />
+                                </div>
+                            )}
                         </div>
 
                         <div className="mb-3 d-flex align-items-center gap-2">
@@ -528,56 +604,16 @@ function Dashboard() {
                                 <option value="yearly">Yearly</option>
                             </select>
                         </div>
-
-                        <div className="mb-3 d-flex align-items-center gap-2">
-                            <Icon 
-                                path={mdiAccount}
-                                size={0.8}
-                            />
-                            <div className="w-100 position-relative">
-                                <input
-                                    type="text"
-                                    className="form-control"
-                                    placeholder="Add participants (press Enter or comma to add)"
-                                    value={newEvent.currentEmail || ''}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        if (value.endsWith(',')) {
-                                            // Add email when comma is typed
-                                            const email = value.slice(0, -1).trim();
-                                            if (isValidEmail(email)) {
-                                                setNewEvent(prev => ({
-                                                    ...prev,
-                                                    participants: [...prev.participants, { email, status: 'pending' }],
-                                                    currentEmail: ''
-                                                }));
-                                            }
-                                        } else {
-                                            setNewEvent(prev => ({ ...prev, currentEmail: value }));
-                                        }
-                                    }}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter' && newEvent.currentEmail) {
-                                            e.preventDefault();
-                                            const email = newEvent.currentEmail.trim();
-                                            if (isValidEmail(email)) {
-                                                setNewEvent(prev => ({
-                                                    ...prev,
-                                                    participants: [...prev.participants, { email, status: 'pending' }],
-                                                    currentEmail: ''
-                                                }));
-                                            }
-                                        }
-                                    }}
-                                />
+                        <div className="mb-3 d-flex align-items-start gap-2">
+                            <div className="w-100 participants-container">
                                 {newEvent.participants.length > 0 && (
-                                    <div className="email-chips mt-2">
+                                    <div className="email-chips">
                                         {newEvent.participants.map((p, index) => (
-                                            <span key={index} className="badge bg-light text-dark me-2">
+                                            <span key={index} className="badge">
                                                 {p.email}
                                                 <button 
                                                     type="button" 
-                                                    className="btn-close ms-2" 
+                                                    className="btn-close" 
                                                     onClick={() => {
                                                         const newParticipants = [...newEvent.participants];
                                                         newParticipants.splice(index, 1);
@@ -588,6 +624,47 @@ function Dashboard() {
                                         ))}
                                     </div>
                                 )}
+                                <div className="participants-input-container">
+                                    <Icon 
+                                        path={mdiAccount}
+                                        size={0.8}
+                                    />
+                                    <input
+                                        type="text"
+                                        className="form-control participants-input"
+                                        placeholder="Add participants"
+                                        value={newEvent.currentEmail || ''}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            if (value.endsWith(',')) {
+                                                // Add email when comma is typed
+                                                const email = value.slice(0, -1).trim();
+                                                if (isValidEmail(email)) {
+                                                    setNewEvent(prev => ({
+                                                        ...prev,
+                                                        participants: [...prev.participants, { email, status: 'pending' }],
+                                                        currentEmail: ''
+                                                    }));
+                                                }
+                                            } else {
+                                                setNewEvent(prev => ({ ...prev, currentEmail: value }));
+                                            }
+                                        }}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && newEvent.currentEmail) {
+                                                e.preventDefault();
+                                                const email = newEvent.currentEmail.trim();
+                                                if (isValidEmail(email)) {
+                                                    setNewEvent(prev => ({
+                                                        ...prev,
+                                                        participants: [...prev.participants, { email, status: 'pending' }],
+                                                        currentEmail: ''
+                                                    }));
+                                                }
+                                            }
+                                        }}
+                                    />
+                                </div>
                             </div>
                         </div>
 
@@ -650,7 +727,7 @@ function Dashboard() {
                             {selectedEvent ? (
                                 <>
                                     <button 
-                                        className="btn btn-primary"
+                                        className="btn btn-primary create-button"
                                         onClick={handleUpdateEvent}
                                         disabled={!newEvent.title}
                                     >
@@ -660,7 +737,7 @@ function Dashboard() {
                             ) : (
                                 <>
                                     <button 
-                                        className="btn btn-primary"
+                                        className="btn btn-primary create-button"
                                         onClick={handleAddEvent}
                                         disabled={!newEvent.title}
                                     >
@@ -733,36 +810,74 @@ function Dashboard() {
         );
     };
 
+    const isSameDay = (date1, date2) => {
+        return format(new Date(date1), 'yyyy-MM-dd') === format(new Date(date2), 'yyyy-MM-dd');
+    };
+
+    const isOverdue = (dueDate) => {
+        return new Date(dueDate) < new Date(new Date().setHours(0, 0, 0, 0));
+    };
+
     const taskDisplayPanel = () => {
+        // Sort todos: overdue first, then by due date
+        const sortedTodos = [...todos].sort((a, b) => {
+            const aOverdue = isOverdue(a.dueDate);
+            const bOverdue = isOverdue(b.dueDate);
+            
+            // If one is overdue and the other isn't, overdue comes first
+            if (aOverdue && !bOverdue) return -1;
+            if (!aOverdue && bOverdue) return 1;
+            
+            // If both are overdue or not overdue, sort by due date
+            return new Date(a.dueDate) - new Date(b.dueDate);
+        });
+
+        const formatDueDate = (dueDate) => {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const dueDateTime = new Date(dueDate);
+            
+            if (isOverdue(dueDate)) {
+                return <span className="task-due overdue">Past due</span>;
+            }
+            
+            if (isSameDay(today, dueDateTime)) {
+                return <span className="task-due today">Today</span>;
+            }
+
+            if (isSameDay(tomorrow, dueDateTime)) {
+                return <span className="task-due tomorrow">Tomorrow</span>;
+            }
+            
+            return <span className="task-due">{format(dueDateTime, 'PPp')}</span>;
+        };
+
         return (
-            <div className="task-display-panel">
+            <div className="right-panel">
                 <div className="task-header">
-                    <h2>My Tasks</h2>
+                    <h2 className="task-header-title">My Tasks</h2>
                     <button 
-                        className="btn-close" 
+                        className="btn add-task-button"
+                        onClick={() => {
+                            setShowTaskDisplayPanel(false);
+                            setShowCreatePanel(true);
+                            setActiveCreateTab('todo');
+                        }}
+                    >
+                        <span>+</span>
+                    </button>
+                    <button 
+                        className="btn-close"
                         onClick={() => setShowTaskDisplayPanel(false)}
                     ></button>
                 </div>
 
-                <div className="add-task-button">
-                    <button 
-                        className="btn btn-link text-primary"
-                        onClick={() => {
-                            setShowTaskDisplayPanel(false);  // Close task panel
-                            setShowCreatePanel(true);        // Open create panel
-                            setActiveCreateTab('todo');      // Switch to todo tab
-                        }}
-                    >
-                        <i className="bi bi-plus-circle text-primary"></i>
-                        <span className="ms-2"> + Add a task</span>
-                    </button>
-                </div>
-
                 <div className="tasks-list">
-                    {todos.map(todo => (
+                    {sortedTodos.map(todo => (
                         <div 
                             key={todo._id} 
-                            className={`task-item ${todo.status === 'Completed' ? 'completed' : ''}`}
+                            className={`task-item ${todo.status === 'Completed' ? 'completed' : ''} ${isOverdue(todo.dueDate) ? 'overdue-item' : ''}`}
                         >
                             <div className="d-flex justify-content-between align-items-start">
                                 <div className="form-check">
@@ -777,8 +892,8 @@ function Dashboard() {
                                             <div className={`task-title ${todo.status === 'Completed' ? 'text-decoration-line-through' : ''}`}>
                                                 {todo.title}
                                             </div>
-                                            <div className="task-due">
-                                                {format(new Date(todo.dueDate), 'PPp')}
+                                            <div>
+                                                {formatDueDate(todo.dueDate)}
                                             </div>
                                         </div>
                                     </label>
@@ -793,8 +908,8 @@ function Dashboard() {
                         </div>
                     ))}
                     {todos.length === 0 && (
-                        <div className="text-center text-muted">
-                            No tasks yet
+                        <div className="text-center text-muted no-tasks">
+                            All Done!
                         </div>
                     )}
                 </div>
@@ -858,11 +973,6 @@ function Dashboard() {
     return (
         <div className="dashboard-container">
             <div className="calendar-column">
-                {isLoading && (
-                    <div className="alert alert-info" role="alert">
-                        Loading...
-                    </div>
-                )}
                 {error && (
                     <div className="alert alert-danger" role="alert">
                         {error}

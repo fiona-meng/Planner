@@ -133,32 +133,64 @@
 
 /* Selected time slot */
 .rbc-selected {
-    background-color: rgba(66, 133, 244, 0.1) !important;
+    background-color: rgba(69, 10, 170, 0.1) !important;
 }
 
 /* Event styles */
 .rbc-event {
-    background-color: #4285f4;
-    border-radius: 4px;
-    border: none;
-    padding: 4px 8px;
+    width: calc(100% - 4px) !important;  /* Full width minus small margin */
+    margin: 2px !important;
+    padding: 4px 8px !important;
+    border-radius: 4px !important;
+    background-color: rgba(173, 216, 230, 0.7) !important;  /* Light blue default */
+    color: #333 !important;  /* Darker text for better contrast */
+    border: none !important;
 }
 
 /* Update the selected event style */
 .rbc-event.rbc-selected {
-    background-color: #28a745 !important; /* Bootstrap green */
-    border-color: #28a745 !important;
+    background-color: #559555 !important; /* Green when selected */
+    border-color: none !important;
+    color: white !important;  /* White text for selected state */
 }
 
 /* Optional: Add hover effect for better UX */
 .rbc-event:hover {
-    background-color: #218838 !important;
-    border-color: #218838 !important;
+    background-color: #559555 !important;
+    border-color: none !important;
+    color: white !important;
 }
 
 /* Make sure the text remains readable */
 .rbc-event.rbc-selected .rbc-event-content {
-    color: white;
+    color: white !important;
+}
+
+/* Adjust event positioning */
+.rbc-event-content {
+    width: 100% !important;
+}
+
+/* Fix overlapping events */
+.rbc-events-container {
+    width: 100% !important;
+}
+
+/* Ensure events are properly aligned */
+.rbc-time-slot {
+    position: relative !important;
+}
+
+/* Fix for event continuations */
+.rbc-event-continues-after,
+.rbc-event-continues-prior {
+    width: 100% !important;
+}
+
+/* Adjust event label positioning */
+.rbc-event-label {
+    padding-right: 8px !important;
+    white-space: nowrap !important;
 }
 
 /* Month view specific */
@@ -241,7 +273,7 @@
     box-shadow: none;
     transition: none;
     z-index: auto;
-    padding: 20px 0;
+    padding: 20px 20px 0 20px;  /* Same padding for both panels */
 }
 
 .right-panel.show {
@@ -255,6 +287,7 @@
     padding-bottom: 10px;
     margin-bottom: 20px;
     border-bottom: 1px solid #eee;
+    height: 45px;  /* Fixed height to match task header */
 }
 
 .right-panel-tabs {
@@ -332,14 +365,19 @@
 }
 
 .task-display-panel {
-    padding: 20px;
+    padding: 20px 20px 0 20px;  /* Same padding for both panels */
 }
 
 .task-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
+    gap: 4px;
+    padding-bottom: 10px;
     margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    height: 45px;
+    padding-right: 16px; /* Add padding to match createPanel */
 }
 
 .task-header h2 {
@@ -360,18 +398,6 @@
     background-color: #f0f0f0;
 }
 
-.add-task-button {
-    margin-bottom: 20px;
-}
-
-.add-task-button .btn-link {
-    text-decoration: none;
-    padding: 0;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-}
-
 .tasks-list {
     display: flex;
     flex-direction: column;
@@ -383,10 +409,16 @@
     position: relative;
     transition: all 0.3s ease-out;
     opacity: 1;
+    border-left: 3px solid transparent;
 }
 
 .task-item.completed {
     opacity: 0;
+}
+
+.task-item.overdue-item {
+    border-left-color: #dc3545;
+    padding-left: 8px;
 }
 
 .task-item .form-check {
@@ -418,6 +450,25 @@
     background-color: #f0f0f0;
     border-radius: 12px;
     display: inline-block;
+}
+
+.task-due.overdue {
+    color: #dc3545;
+    background-color: #fde8ea;
+}
+
+.task-due.today {
+    color: #0d6efd;
+    background-color: #e7f1ff;
+}
+
+.task-due.tomorrow {
+    color: #198754;  /* Bootstrap success color */
+    background-color: #e8f5e9;
+}
+
+.overdue-item .task-title {
+    color: #dc3545;
 }
 
 .task-item .btn-trash {
@@ -602,6 +653,7 @@ input[type="datetime-local"] {
     border: none;
     background: transparent;
     padding-left: 36px;  /* Make room for the icon */
+    color: #6b6b6b;
 }
 
 .create-todo-form .form-control:focus,
@@ -693,17 +745,291 @@ input[type="datetime-local"] {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+    padding: 8px 0;
+    min-height: 0;
+    max-height: 120px;
+    overflow-y: auto;
+    transition: min-height 0.2s ease;
+    margin-bottom: 8px;
+    order: 1;
 }
 
+/* Style for the container when it has chips */
+.email-chips:not(:empty) {
+    min-height: 40px;  /* Minimum height when has content */
+    margin-top: 8px;   /* Space from input */
+    padding: 4px 0;    /* Padding for content */
+    margin-left:20px;
+}
+
+/* Update badge styles */
 .email-chips .badge {
     display: inline-flex;
     align-items: center;
     padding: 6px 10px;
     font-weight: normal;
     border: 1px solid #dee2e6;
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+    margin: 2px;
+    white-space: nowrap;
 }
 
+/* Close button in badges */
 .email-chips .btn-close {
     font-size: 10px;
     padding: 2px;
+    margin-left: 6px !important;
+    opacity: 0.5;
 }
+
+.email-chips .btn-close:hover {
+    opacity: 1;
+}
+
+/* Container for input and chips */
+.participants-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 38px;
+    height: auto;
+}
+
+.participants-input-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    order: 2;
+    position: relative;
+    padding: 8px 0;
+}
+
+.participants-input-container svg {
+    color: #6b6b6b;
+    min-width: 20px;
+}
+
+.participants-input {
+    flex: 1;
+    border: none !important;
+    background: transparent;
+    padding-left: 35px !important;
+    height: 38px !important;
+    box-shadow: none !important;
+    width: 120px;
+}
+
+.participants-input:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Update the form control container */
+.create-event-form .form-control {
+    min-height: 38px;  /* Base height for input */
+    height: auto;      /* Allow height to grow */
+}
+
+.no-tasks {
+    text-align: center;
+    margin-top: 300px;
+    font-size: 20px;
+    color: #949494 !important;
+    font-weight: 200 !important;
+}
+
+.task-header-title {
+    font-size: 16px;
+    margin: 0;
+    margin-right: 4px !important;
+    border: none;
+    background: none;
+    font-size: 16px !important;
+    color: #6b6b6b;
+    border-bottom: 2px solid transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 20px !important;
+}
+
+.add-task-button {
+    background-color: white;
+    border: none;
+    padding: 0;
+    font-size: 20px;
+    color: #3b3b3b;
+    font-weight: 200;
+    margin: 0 !important;
+    margin-left: 10px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+/* Common close button styles for both panels */
+.right-panel-header .btn-close,
+.task-header .btn-close {
+    display: flex;
+    justify-content: flex-end;
+    padding: 8px 16px;
+    font-size: 0.8rem !important;
+    width: 20px !important;
+    height: 20px !important;
+    opacity: 0.5;
+}
+
+.right-panel-header .btn-close:hover,
+.task-header .btn-close:hover {
+    opacity: 0.75;
+}
+
+/* Add these styles for circular checkbox */
+.form-check-input[type="checkbox"] {
+    border-radius: 50% !important;  /* Make the checkbox circular */
+    width: 18px !important;         /* Set consistent size */
+    height: 18px !important;
+    margin-top: 3px !important;     /* Align with text */
+    cursor: pointer;
+    border: 2px solid #6b6b6b !important;  /* Default border color */
+}
+
+.form-check-input[type="checkbox"]:checked {
+    background-color: #1e1e1e !important;  /* Color when checked */
+    border-color: #2b2b2b !important;
+}
+
+/* Optional: Add hover effect */
+.form-check-input[type="checkbox"]:hover {
+    border-color: #3d3d3d !important;
+}
+
+/* Date and time picker styles */
+.date-time-picker-container {
+    display: flex;
+    flex-direction: column;  /* Stack items vertically */
+    gap: 8px;  /* Space between start and end date rows */
+    color: #6b6b6b !important;
+}
+
+.date-time-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-left: 10px;
+    color: #6b6b6b !important;
+}
+
+.date-time-label {
+    color: #6c757d;
+    font-size: 16px;
+    width: 45px;  /* Fixed width for labels to align inputs */
+}
+
+.date-picker {
+    width: 120px;
+    padding: 4px 8px !important;
+    padding-right: 30px;
+    font-size: 16px !important;
+    height: 32px !important;
+}
+
+.time-picker {
+    width: 100px;
+    padding: 4px 8px !important;
+    font-size: 16px !important;
+    height: 32px !important;
+}
+
+.date-picker-all-day {
+    width: 115px;
+    padding: 4px 8px !important;
+    font-size: 16px !important;
+    height: 32px !important;
+}
+
+/* Remove the default calendar and time picker icons */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+    opacity: 0.5;
+    cursor: pointer;
+    scale: 0.8;
+    padding-left: 0px;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="time"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 0.8;
+}
+
+/* Focus styles */
+.date-picker:focus,
+.time-picker:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    background-color: #f8f9fa !important;
+    border-radius: 4px;
+}
+
+/* Remove all the recent selection styles */
+.rbc-slot-selection,
+.rbc-slot-selecting,
+.rbc-selection,
+.rbc-selection-bg {
+    background-color: rgba(173, 216, 230, 0.3) !important;
+}
+
+/* Style for selected event */
+.rbc-selected {
+    background-color: rgba(173, 216, 230, 0.7) !important;
+}
+
+/* Style for the form switch container */
+.form-check.form-switch {
+    padding-left: 9px !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+}
+
+/* Adjust the switch position */
+.form-check.form-switch .form-check-input {
+    width: 25px !important;
+    height: 12px !important;
+    border-radius: 20px !important;
+    background-color: #e9ecef !important;
+    border: none !important;
+    cursor: pointer;
+    margin: 0 !important;
+    position: relative;
+    top: 0;
+    box-shadow: none !important;  /* Remove shadow */
+}
+
+/* Remove focus outline and shadow */
+.form-check.form-switch .form-check-input:focus {
+    box-shadow: none !important;
+    outline: none !important;
+    border: none !important;
+}
+
+/* Style for checked state */
+.form-check.form-switch .form-check-input:checked {
+    background-color: #1e1e1e !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Adjust the label position */
+.form-check.form-switch .form-check-label {
+    color: #6b6b6b;
+    font-size: 14px;
+    cursor: pointer;
+    margin: 0;
+    padding: 0;
+    line-height: 1;
+}
+

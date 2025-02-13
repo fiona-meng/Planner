@@ -3,7 +3,7 @@ import { authAPI } from '../../services/api';
 import { useState } from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
 import './Login.css';
-import loginImage from '../../assets/images/login.jpg';
+import loginImage from '../../assets/images/new_login.png';
 
 
 function Login() {
