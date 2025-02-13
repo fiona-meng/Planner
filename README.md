@@ -1,16 +1,19 @@
 # MyCalendar - Modern Calendar & Task Management App
 
 ## Live Demo
-Frontend: https://mycalendar-frontend.vercel.app
-Backend: https://mycalendar-backend.vercel.app
+
+https://mycalendarfrontend.vercel.app/
 
 ## Screenshots
+
 [Add your application screenshots here]
 
 ## Contributing
+
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
 ## License
+
 [MIT](https://choosealicense.com/licenses/mit/)
 
 ## Overview
@@ -48,7 +51,6 @@ MyCalendar is a modern, intuitive calendar and task management application built
   - Email/password authentication
   - Google OAuth integration
   - Secure token-based sessions
- 
 
 ## Tech Stack
 
