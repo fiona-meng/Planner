@@ -1,70 +1,86 @@
-# Getting Started with Create React App
+# MyCalendar - Modern Calendar & Task Management App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Overview
 
-## Available Scripts
+MyCalendar is a modern, intuitive calendar and task management application built with React. It combines event scheduling with todo list functionality, providing users with a seamless experience for managing their time and tasks.
 
-In the project directory, you can run:
+## Features
 
-### `npm start`
+- **Event Management**
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+  - Create, edit, and delete calendar events
+  - All-day event support
+  - Event repetition (daily, weekly, monthly, yearly)
+  - Add multiple participants to events
+  - Location support with address autocomplete
+  - Event description and details
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- **Todo Management**
 
-### `npm test`
+  - Create and manage todo items
+  - Set due dates and descriptions
+  - Mark todos as complete/incomplete
+  - Automatic organization of tasks
+  - Quick task creation interface
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- **User Interface**
 
-### `npm run build`
+  - Clean, modern design
+  - Responsive layout
+  - Intuitive drag-and-drop interface
+  - Different calendar views (month, week, day)
+  - Side panel for quick task access
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- **Authentication**
+  - Email/password authentication
+  - Google OAuth integration
+  - Secure token-based sessions
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Tech Stack
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Frontend
 
-### `npm run eject`
+- React 18
+- React Router v6
+- React Big Calendar
+- Date-fns
+- Axios
+- Bootstrap 5
+- Google OAuth
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### Backend
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- Node.js
+- Express
+- MongoDB with Mongoose
+- JWT for authentication
+- bcrypt for password hashing
+- Google Auth Library
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## API Endpoints
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### Authentication
 
-## Learn More
+- `POST /auth/register` - Register new user
+- `POST /auth/login` - User login
+- `POST /auth/google` - Google OAuth login
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Events
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- `GET /events` - Get all events
+- `POST /events` - Create new event
+- `PUT /events/:id` - Update event
+- `DELETE /events/:id` - Delete event
 
-### Code Splitting
+### Todos
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+- `GET /todos` - Get all todos
+- `POST /todos` - Create new todo
+- `PUT /todos/:id` - Update todo
+- `DELETE /todos/:id` - Delete todo
+- `PUT /todos/:id/toggle` - Toggle todo status
 
-### Analyzing the Bundle Size
+## Getting Started
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+1. Clone the repository
+2. Install dependencies for both frontend and backend:
