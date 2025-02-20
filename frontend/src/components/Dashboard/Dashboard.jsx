@@ -101,6 +101,7 @@ function Dashboard() {
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [locationSuggestions, setLocationSuggestions] = useState([]);
     const [selectedSlot, setSelectedSlot] = useState(null);
+    const [editingTodo, setEditingTodo] = useState(null);
 
     useEffect(() => {
         loadEvents();
@@ -232,29 +233,61 @@ function Dashboard() {
         });
     };
 
+    const handleEditMode = (todo) => {
+        setShowTaskDisplayPanel(false);
+        setShowCreatePanel(true);
+        setActiveCreateTab('todo');
+        setNewTodo({
+            id: todo._id,
+            title: todo.title,
+            dueDate: ensureDate(todo.dueDate),
+            description: todo.description || ''
+        });
+    };
+
     const handleAddTodo = async () => {
         if (!newTodo.title.trim()) return;
         
         try {
-            const response = await todoAPI.createTodo({
-                title: newTodo.title.trim(),
-                dueDate: newTodo.dueDate,
-                description: newTodo.description.trim()
-            });
-            
-            if (response.data.success) {
-                await loadTodos();
-                setNewTodo({
-                    title: '',
-                    dueDate: new Date(),
-                    description: ''
+            if (newTodo.id) {
+                // Update existing todo
+                const response = await todoAPI.updateTodo(newTodo.id, {
+                    title: newTodo.title.trim(),
+                    dueDate: newTodo.dueDate,
+                    description: newTodo.description.trim()
                 });
-                // Switch panels after successful todo creation
-                setShowCreatePanel(false);
-                setShowTaskDisplayPanel(true);
+                
+                if (response.data.success) {
+                    await loadTodos();
+                    setNewTodo({
+                        title: '',
+                        dueDate: new Date(),
+                        description: ''
+                    });
+                    setShowCreatePanel(false);
+                    setShowTaskDisplayPanel(true);
+                }
+            } else {
+                // Create new todo
+                const response = await todoAPI.createTodo({
+                    title: newTodo.title.trim(),
+                    dueDate: newTodo.dueDate,
+                    description: newTodo.description.trim()
+                });
+                
+                if (response.data.success) {
+                    await loadTodos();
+                    setNewTodo({
+                        title: '',
+                        dueDate: new Date(),
+                        description: ''
+                    });
+                    setShowCreatePanel(false);
+                    setShowTaskDisplayPanel(true);
+                }
             }
         } catch (error) {
-            console.error('Error creating todo:', error);
+            console.error('Error saving todo:', error);
         }
     };
 
@@ -373,6 +406,14 @@ function Dashboard() {
 
     const handleDeleteTodo = async (todoId) => {
         try {
+            // Clean up any editing state first
+            setEditingTodo(null);
+            setNewTodo({
+                title: '',
+                dueDate: new Date(),
+                description: ''
+            });
+
             // Optimistically remove the todo from UI
             const updatedTodos = todos.filter(todo => todo._id !== todoId);
             setTodos(updatedTodos);
@@ -391,9 +432,26 @@ function Dashboard() {
         }
     };
 
+    const handleEditTodo = async (todoId, updatedData) => {
+        try {
+            const response = await todoAPI.updateTodo(todoId, updatedData);
+            if (response.data.success) {
+                await loadTodos();
+                setEditingTodo(null);
+            }
+        } catch (error) {
+            console.error('Error updating todo:', error);
+        }
+    };
+
     const ensureDate = (date) => {
         if (!date) return new Date();
-        return date instanceof Date ? date : new Date(date);
+        try {
+            const parsedDate = new Date(date);
+            return isNaN(parsedDate.getTime()) ? new Date() : parsedDate;
+        } catch (error) {
+            return new Date();
+        }
     };
 
     const createPanel = () => {
@@ -755,7 +813,7 @@ function Dashboard() {
                                 size={0.8}
                             />
                             <input
-                                type="text"
+                                type="form-control"
                                 className="form-control form-control-lg border-0"
                                 placeholder="Add a todo"
                                 value={newTodo.title}
@@ -772,10 +830,13 @@ function Dashboard() {
                                 type="datetime-local"
                                 className="form-control"
                                 value={format(ensureDate(newTodo.dueDate), "yyyy-MM-dd'T'HH:mm")}
-                                onChange={(e) => setNewTodo({ 
-                                    ...newTodo, 
-                                    dueDate: new Date(e.target.value) 
-                                })}
+                                onChange={(e) => {
+                                    const date = e.target.value ? new Date(e.target.value) : new Date();
+                                    setNewTodo({ 
+                                        ...newTodo, 
+                                        dueDate: date
+                                    });
+                                }}
                             />
                         </div>
 
@@ -801,7 +862,7 @@ function Dashboard() {
                                 onClick={handleAddTodo}
                                 disabled={!newTodo.title}
                             >
-                                Create
+                                {newTodo.id ? 'Update' : 'Create'}
                             </button>
                         </div>
                     </div>
@@ -856,30 +917,35 @@ function Dashboard() {
         return (
             <div className="right-panel">
                 <div className="task-header">
-                    <h2 className="task-header-title">My Tasks</h2>
-                    <button 
-                        className="btn add-task-button"
-                        onClick={() => {
-                            setShowTaskDisplayPanel(false);
-                            setShowCreatePanel(true);
-                            setActiveCreateTab('todo');
-                        }}
-                    >
-                        <span>+</span>
-                    </button>
-                    <button 
-                        className="btn-close"
-                        onClick={() => setShowTaskDisplayPanel(false)}
-                    ></button>
+                    <div className="task-header-left">
+                        <div className="title-add-group">
+                            <h2 className="task-header-title">My Tasks</h2>
+                            <button 
+                                className="btn add-task-button"
+                                onClick={() => {
+                                    setShowTaskDisplayPanel(false);
+                                    setShowCreatePanel(true);
+                                    setActiveCreateTab('todo');
+                                }}
+                            >
+                                <span>+</span>
+                            </button>
+                        </div>
+                        <button 
+                            className="btn-close add-task-close"
+                            onClick={() => setShowTaskDisplayPanel(false)}
+                        ></button>
+                    </div>
                 </div>
 
                 <div className="tasks-list">
                     {sortedTodos.map(todo => (
                         <div 
                             key={todo._id} 
+                            data-todo-id={todo._id}
                             className={`task-item ${todo.status === 'Completed' ? 'completed' : ''} ${isOverdue(todo.dueDate) ? 'overdue-item' : ''}`}
                         >
-                            <div className="d-flex justify-content-between align-items-start">
+                            <div className="d-flex justify-content-between align-items-center w-100">
                                 <div className="form-check">
                                     <input
                                         type="checkbox"
@@ -888,22 +954,50 @@ function Dashboard() {
                                         onChange={() => handleToggleTodo(todo._id)}
                                     />
                                     <label className="form-check-label">
-                                        <div>
-                                            <div className={`task-title ${todo.status === 'Completed' ? 'text-decoration-line-through' : ''}`}>
-                                                {todo.title}
-                                            </div>
+                                        {editingTodo?.id === todo._id ? (
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                value={editingTodo.title}
+                                                onChange={(e) => setEditingTodo({
+                                                    ...editingTodo,
+                                                    title: e.target.value
+                                                })}
+                                                onKeyPress={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        handleEditTodo(todo._id, {
+                                                            title: editingTodo.title,
+                                                            dueDate: editingTodo.dueDate
+                                                        });
+                                                    }
+                                                }}
+                                            />
+                                        ) : (
                                             <div>
-                                                {formatDueDate(todo.dueDate)}
+                                                <div className={`task-title ${todo.status === 'Completed' ? 'text-decoration-line-through' : ''}`}>
+                                                    {todo.title}
+                                                </div>
+                                                <div className="task-due">
+                                                    {formatDueDate(todo.dueDate)}
+                                                </div>
                                             </div>
-                                        </div>
+                                        )}
                                     </label>
                                 </div>
-                                <button 
-                                    className="btn btn-link text-danger btn-sm"
-                                    onClick={() => handleDeleteTodo(todo._id)}
-                                >
-                                    <i className="bi bi-trash"></i>
-                                </button>
+                                <div className="task-actions">
+                                    <button 
+                                        className="btn btn-edit"
+                                        onClick={() => handleEditMode(todo)}
+                                    >
+                                        <i className="bi bi-pencil"></i>
+                                    </button>
+                                    <button 
+                                        className="btn btn-delete"
+                                        onClick={() => handleDeleteTodo(todo._id)}
+                                    >
+                                        <i className="bi bi-trash"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     ))}
@@ -971,8 +1065,8 @@ function Dashboard() {
     }, [selectedEvent, handleDeleteEvent]);
 
     return (
-        <div className="dashboard-container">
-            <div className="calendar-column">
+        <div className="dashboard-container row">
+            <div className="col-lg-8 col-md-7 col-sm-12 calendar-column">
                 {error && (
                     <div className="alert alert-danger" role="alert">
                         {error}
@@ -1006,7 +1100,7 @@ function Dashboard() {
             </div>
 
             {(showCreatePanel || showTaskDisplayPanel) && (
-                <div className="right-column">
+                <div className="col-lg-4 col-md-5 col-sm-12 right-column">
                     {showCreatePanel && createPanel()}
                     {showTaskDisplayPanel && taskDisplayPanel()}
                 </div>

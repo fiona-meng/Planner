@@ -1,3 +1,13 @@
+process.removeAllListeners('warning');
+process.on('warning', (warning) => {
+    if (warning.name === 'DeprecationWarning' && warning.code === 'DEP0040') {
+        return;
+    }
+    console.warn(warning.name);
+    console.warn(warning.message);
+    console.warn(warning.stack);
+});
+
 const express = require('express')
 const cors = require('cors')
 const app = express()
