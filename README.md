@@ -1,20 +1,28 @@
 # MyCalendar - Modern Calendar & Task Management App
 
-## Live Demo
-
+Access from Here!
 https://mycalendarfrontend.vercel.app/
 
 ## Screenshots
+### Login Page
 
-[Add your application screenshots here]
+<img width="1509" alt="login" src="https://github.com/user-attachments/assets/50185bcd-39c2-4037-8bdd-4b23c27bc24e" />
 
-## Contributing
+### Create event
+<img width="1501" alt="createEvent" src="https://github.com/user-attachments/assets/b887b004-b504-437a-8ca2-566447575f1d" />
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+### Create Todo
+<img width="1509" alt="createTodo" src="https://github.com/user-attachments/assets/a9d9d6f2-b979-4994-bb77-0038c8901843" />
 
-## License
+### Monthly View
+<img width="1506" alt="month" src="https://github.com/user-attachments/assets/7ba36ce4-5e81-4819-b682-8f245366f7a3" />
 
-[MIT](https://choosealicense.com/licenses/mit/)
+### Weekly View
+<img width="1509" alt="week" src="https://github.com/user-attachments/assets/a93f47a2-8e48-4994-b428-acfe57315042" />
+
+### Task panel
+<img width="1508" alt="taskpanel" src="https://github.com/user-attachments/assets/abe52288-3bbe-4984-b983-743b847fb4cb" />
+
 
 ## Overview
 
@@ -26,7 +34,7 @@ MyCalendar is a modern, intuitive calendar and task management application built
 
   - Create, edit, and delete calendar events
   - All-day event support
-  - Event repetition (daily, weekly, monthly, yearly)
+  - Event repetition (daily, weekly, monthly)
   - Add multiple participants to events
   - Location support with address autocomplete
   - Event description and details
@@ -72,31 +80,3 @@ MyCalendar is a modern, intuitive calendar and task management application built
 - JWT for authentication
 - bcrypt for password hashing
 - Google Auth Library
-
-## API Endpoints
-
-### Authentication
-
-- `POST /auth/register` - Register new user
-- `POST /auth/login` - User login
-- `POST /auth/google` - Google OAuth login
-
-### Events
-
-- `GET /events` - Get all events
-- `POST /events` - Create new event
-- `PUT /events/:id` - Update event
-- `DELETE /events/:id` - Delete event
-
-### Todos
-
-- `GET /todos` - Get all todos
-- `POST /todos` - Create new todo
-- `PUT /todos/:id` - Update todo
-- `DELETE /todos/:id` - Delete todo
-- `PUT /todos/:id/toggle` - Toggle todo status
-
-## Getting Started
-
-1. Clone the repository
-2. Install dependencies for both frontend and backend:
